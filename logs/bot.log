@@ -17319,3 +17319,524 @@ Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linea
 [2026-05-08 15:41:25] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
 [2026-05-08 15:41:31] INFO     ai_analyzer          [OK] Ollama: conf=0.75
 [2026-05-08 15:41:31] INFO     ai_analyzer          [OK] ZECUSDT via Ollama | conf=0.75 | rec=trade
+[2026-05-08 15:42:36] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:42:36] INFO     bot                  BTCUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:42:42] INFO     ai_analyzer          [OK] Ollama: conf=0.75
+[2026-05-08 15:42:42] INFO     ai_analyzer          [OK] BTCUSDT via Ollama | conf=0.75 | rec=trade
+[2026-05-08 15:42:46] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:42:46] INFO     bot                  ETHUSDT | Contextos: ['breakout', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 15:42:52] INFO     ai_analyzer          [OK] Ollama: conf=0.75
+[2026-05-08 15:42:52] INFO     ai_analyzer          [OK] ETHUSDT via Ollama | conf=0.75 | rec=trade
+[2026-05-08 15:43:04] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:43:04] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:43:10] INFO     ai_analyzer          [OK] Ollama: conf=0.85
+[2026-05-08 15:43:10] INFO     ai_analyzer          [OK] XRPUSDT via Ollama | conf=0.85 | rec=trade
+[2026-05-08 15:43:10] WARNING  bot                  XRPUSDT | Plano diário não criado
+[2026-05-08 15:43:11] WARNING  bot                  XRPUSDT | OB FAKE: OB fake - sem consolidação real (17%) (penalidade=-10.0%)
+[2026-05-08 15:43:11] INFO     bot                  [BASE ✓] XRPUSDT Buy | conf=0.68 (+12.0% avançadas) | lev=6x | RR=1:3.47
+[2026-05-08 15:43:11] INFO     bybit_client         XRPUSDT qty ajustada: 1456.59166453 → 1456.6000000000001 (ajustado(step(0.1)) [min=0.1, max=7500000.0, step=0.1])
+[2026-05-08 15:43:12] ERROR    bybit_client         Erro place_market_order XRPUSDT: Qty invalid (ErrCode: 10001) (ErrTime: 18:43:12).
+Request → POST https://api-demo.bybit.com/v5/order/create: {"category": "linear", "symbol": "XRPUSDT", "side": "Buy", "orderType": "Market", "qty": "1456.6000000000001", "stopLoss": "1.4181", "takeProfit": "1.4266", "tpslMode": "Full", "slTriggerBy": "MarkPrice", "tpTriggerBy": "MarkPrice", "reduceOnly": false}.
+[2026-05-08 15:43:12] ERROR    bot                  Falha ao abrir ordem: XRPUSDT
+[2026-05-08 15:43:14] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:43:14] INFO     bot                  DOGEUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:43:21] INFO     ai_analyzer          [OK] Ollama: conf=0.75
+[2026-05-08 15:43:21] INFO     ai_analyzer          [OK] DOGEUSDT via Ollama | conf=0.75 | rec=trade
+[2026-05-08 15:43:21] WARNING  bot                  DOGEUSDT | Plano diário não criado
+[2026-05-08 15:43:21] WARNING  bot                  DOGEUSDT | OB FAKE: OB fake - sem consolidação real (17%) (penalidade=-10.0%)
+[2026-05-08 15:43:21] INFO     bot                  [BASE ✓] DOGEUSDT Buy | conf=0.75 (+18.0% avançadas) | lev=6x | RR=1:3.58
+[2026-05-08 15:43:21] INFO     bybit_client         DOGEUSDT qty ajustada: 5765.67533875 → 5766.0 (ajustado(step(1.0)) [min=1.0, max=43678900.0, step=1.0])
+[2026-05-08 15:43:22] INFO     bybit_client         Ordem aberta: DOGEUSDT Buy qty=5766.0 SL=0.1082 TP=0.1104 | id=c5ea9283-fc54-43da-9311-b847df31e481
+[2026-05-08 15:43:22] INFO     trade_state          Trade registrado: 019ab326 | DOGEUSDT Buy
+[2026-05-08 15:43:22] ERROR    bot                  Erro ao analisar DOGEUSDT: TelegramNotifier.notify_trade_open() got an unexpected keyword argument 'advanced_techniques'
+[2026-05-08 15:43:33] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:43:33] INFO     bot                  TAOUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:43:38] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:43:38] INFO     ai_analyzer          [FALLBACK] TAOUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:43:52] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 7.0 candles | Score: 0.577
+[2026-05-08 15:43:52] INFO     bot                  DASHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POI'] | Dir: Buy
+[2026-05-08 15:43:57] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:43:57] INFO     ai_analyzer          [FALLBACK] DASHUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:44:03] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 2.0 candles | Score: 0.999
+[2026-05-08 15:44:03] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 15:44:08] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:44:08] INFO     ai_analyzer          [FALLBACK] LINKUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:44:12] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:44:18] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:44:18] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:44:22] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:44:22] INFO     ai_analyzer          [FALLBACK] VIRTUALUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:44:25] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:44:25] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:44:30] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:44:30] INFO     ai_analyzer          [FALLBACK] XAUUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:44:32] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:44:32] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:44:37] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:44:37] INFO     ai_analyzer          [FALLBACK] ZECUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:45:42] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:45:42] INFO     bot                  BTCUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:45:47] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:45:47] INFO     ai_analyzer          [FALLBACK] BTCUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:45:50] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:45:50] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 15:45:54] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:45:54] INFO     ai_analyzer          [FALLBACK] ETHUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:46:04] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:46:04] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:46:08] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:46:08] INFO     ai_analyzer          [FALLBACK] XRPUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:46:20] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:46:20] INFO     bot                  TAOUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:46:25] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:46:25] INFO     ai_analyzer          [FALLBACK] TAOUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:46:28] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:46:28] INFO     bot                  FARTCOINUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:46:32] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:46:32] INFO     ai_analyzer          [FALLBACK] FARTCOINUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:46:35] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.593
+[2026-05-08 15:46:35] INFO     bot                  SUIUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 15:46:40] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:46:40] INFO     ai_analyzer          [FALLBACK] SUIUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:46:53] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 3.0 candles | Score: 0.759
+[2026-05-08 15:46:53] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 15:46:57] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:46:57] INFO     ai_analyzer          [FALLBACK] LINKUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:47:05] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:47:05] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:47:10] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:47:10] INFO     ai_analyzer          [FALLBACK] VIRTUALUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:47:13] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:47:13] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:47:17] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:47:17] INFO     ai_analyzer          [FALLBACK] XAUUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:47:20] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:47:20] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:47:24] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:47:24] INFO     ai_analyzer          [FALLBACK] ZECUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:48:29] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:48:29] INFO     bot                  BTCUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:48:34] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:48:34] INFO     ai_analyzer          [FALLBACK] BTCUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:48:38] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:48:38] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 15:48:42] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:48:42] INFO     ai_analyzer          [FALLBACK] ETHUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:48:51] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:48:51] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:48:55] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:48:55] INFO     ai_analyzer          [FALLBACK] XRPUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:48:59] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:48:59] INFO     bot                  WIFUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:49:03] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:49:03] INFO     ai_analyzer          [FALLBACK] WIFUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:49:11] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.620
+[2026-05-08 15:49:11] INFO     bot                  NEARUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POI'] | Dir: Buy
+[2026-05-08 15:49:16] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:49:16] INFO     ai_analyzer          [FALLBACK] NEARUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:49:19] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:49:19] INFO     bot                  TAOUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:49:23] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:49:23] INFO     ai_analyzer          [FALLBACK] TAOUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:49:35] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 8.0 candles | Score: 0.577
+[2026-05-08 15:49:35] INFO     bot                  DASHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POI'] | Dir: Buy
+[2026-05-08 15:49:39] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:49:39] INFO     ai_analyzer          [FALLBACK] DASHUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:49:45] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 3.0 candles | Score: 0.759
+[2026-05-08 15:49:45] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 15:49:49] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:49:49] INFO     ai_analyzer          [FALLBACK] LINKUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:49:52] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:49:58] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:49:58] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:50:02] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:50:02] INFO     ai_analyzer          [FALLBACK] VIRTUALUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:50:06] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:50:06] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:50:10] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:50:10] INFO     ai_analyzer          [FALLBACK] XAUUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:50:13] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:50:13] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:50:18] WARNING  ai_analyzer          [FAIL] Together AI falhou: HTTP Error 403: Forbidden
+[2026-05-08 15:50:18] INFO     ai_analyzer          [FALLBACK] ZECUSDT usando analise calculada (IA indisponivel)
+[2026-05-08 15:51:02] INFO     main                 Sinal de shutdown recebido. Encerrando bot...
+[2026-05-08 15:51:02] INFO     bot                  Shutdown iniciado.
+[2026-05-08 15:51:02] INFO     bot                  Stats finais: {'total_trades': 18, 'wins': 6, 'losses': 12, 'win_rate': 33.3, 'total_pnl': 19.0795, 'open_trades': 3}
+[2026-05-08 15:51:19] INFO     bot                  Shutdown iniciado.
+[2026-05-08 15:51:19] INFO     bot                  Stats finais: {'total_trades': 18, 'wins': 6, 'losses': 12, 'win_rate': 33.3, 'total_pnl': 19.0795, 'open_trades': 3}
+[2026-05-08 15:51:19] INFO     main                 Bot encerrado.
+[2026-05-08 15:56:00] INFO     main                 ============================================================
+[2026-05-08 15:56:00] INFO     main                   AI TRADE BOT - Bybit Futures
+[2026-05-08 15:56:00] INFO     main                   Versão 1.0.0
+[2026-05-08 15:56:00] INFO     main                 ============================================================
+[2026-05-08 15:56:00] INFO     bybit_client         BybitClient iniciado | modo=demo | endpoint=https://api-demo.bybit.com
+[2026-05-08 15:56:01] INFO     ai_analyzer          Grok client inicializado com modelo mixtral-8x7b-32768
+[2026-05-08 15:56:01] INFO     ai_analyzer          AIAnalyzer inicializado com Grok
+[2026-05-08 15:56:01] INFO     trade_state          Estado carregado: 21 trades
+[2026-05-08 15:56:01] INFO     bot                  Bot iniciado.
+[2026-05-08 15:56:01] INFO     risk_manager         Contadores diários resetados | Equity=136.48 USDT
+[2026-05-08 15:56:07] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:56:07] INFO     bot                  BTCUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:56:08] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:56:11] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:56:11] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 15:56:12] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:56:20] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:56:20] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:56:21] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:56:33] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:56:33] INFO     bot                  TAOUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:56:33] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:56:39] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.593
+[2026-05-08 15:56:39] INFO     bot                  SUIUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 15:56:39] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:56:47] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 8.0 candles | Score: 0.577
+[2026-05-08 15:56:47] INFO     bot                  DASHUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POI'] | Dir: Buy
+[2026-05-08 15:56:47] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:56:56] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 3.0 candles | Score: 0.759
+[2026-05-08 15:56:56] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 15:56:56] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:56:59] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:57:05] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 15:57:05] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:57:06] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:57:09] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:57:09] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:57:10] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:57:13] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 15:57:13] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 15:57:14] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `mixtral-8x7b-32768` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 15:57:35] INFO     main                 Sinal de shutdown recebido. Encerrando bot...
+[2026-05-08 15:57:35] INFO     bot                  Shutdown iniciado.
+[2026-05-08 15:57:35] INFO     bot                  Stats finais: {'total_trades': 18, 'wins': 6, 'losses': 12, 'win_rate': 33.3, 'total_pnl': 19.0795, 'open_trades': 3}
+[2026-05-08 15:58:10] INFO     ai_analyzer          Grok client inicializado com modelo llama-3.1-70b-versatile
+[2026-05-08 15:58:16] INFO     bot                  Shutdown iniciado.
+[2026-05-08 15:58:16] INFO     bot                  Stats finais: {'total_trades': 18, 'wins': 6, 'losses': 12, 'win_rate': 33.3, 'total_pnl': 19.0795, 'open_trades': 3}
+[2026-05-08 15:58:16] INFO     main                 Bot encerrado.
+[2026-05-08 15:59:20] INFO     ai_analyzer          Grok client inicializado com modelo llama-3.1-70b-versatile
+[2026-05-08 15:59:20] INFO     ai_analyzer          AIAnalyzer inicializado com Grok
+[2026-05-08 16:06:30] INFO     main                 ============================================================
+[2026-05-08 16:06:30] INFO     main                   AI TRADE BOT - Bybit Futures
+[2026-05-08 16:06:30] INFO     main                   Versão 1.0.0
+[2026-05-08 16:06:30] INFO     main                 ============================================================
+[2026-05-08 16:06:30] INFO     bybit_client         BybitClient iniciado | modo=demo | endpoint=https://api-demo.bybit.com
+[2026-05-08 16:06:30] INFO     ai_analyzer          Grok client inicializado com modelo llama-3.1-70b-versatile
+[2026-05-08 16:06:30] INFO     ai_analyzer          AIAnalyzer inicializado com Grok
+[2026-05-08 16:06:30] INFO     trade_state          Estado carregado: 21 trades
+[2026-05-08 16:06:30] INFO     bot                  Bot iniciado.
+[2026-05-08 16:06:31] INFO     risk_manager         Contadores diários resetados | Equity=135.71 USDT
+[2026-05-08 16:06:35] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:06:38] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:06:38] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:06:38] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 16:06:41] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 3.0 candles | Score: 0.705
+[2026-05-08 16:06:41] INFO     bot                  SOLUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:06:42] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 16:06:48] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:06:48] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:06:48] WARNING  ai_analyzer          [FAIL] Grok falhou: Error code: 400 - {'error': {'message': 'The model `llama-3.1-70b-versatile` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to use instead.', 'type': 'invalid_request_error', 'code': 'model_decommissioned'}}
+[2026-05-08 16:06:57] INFO     main                 Sinal de shutdown recebido. Encerrando bot...
+[2026-05-08 16:06:59] INFO     bot                  Shutdown iniciado.
+[2026-05-08 16:06:59] INFO     bot                  Stats finais: {'total_trades': 18, 'wins': 6, 'losses': 12, 'win_rate': 33.3, 'total_pnl': 19.0795, 'open_trades': 3}
+[2026-05-08 16:08:00] INFO     bot                  Shutdown iniciado.
+[2026-05-08 16:08:00] INFO     bot                  Stats finais: {'total_trades': 18, 'wins': 6, 'losses': 12, 'win_rate': 33.3, 'total_pnl': 19.0795, 'open_trades': 3}
+[2026-05-08 16:08:00] INFO     main                 Bot encerrado.
+[2026-05-08 16:11:25] INFO     main                 ============================================================
+[2026-05-08 16:11:25] INFO     main                   AI TRADE BOT - Bybit Futures
+[2026-05-08 16:11:25] INFO     main                   Versão 1.0.0
+[2026-05-08 16:11:25] INFO     main                 ============================================================
+[2026-05-08 16:11:25] INFO     bybit_client         BybitClient iniciado | modo=demo | endpoint=https://api-demo.bybit.com
+[2026-05-08 16:11:26] INFO     ai_analyzer          Grok client inicializado com modelo llama-3.3-70b-versatile
+[2026-05-08 16:11:26] INFO     ai_analyzer          AIAnalyzer inicializado com Grok
+[2026-05-08 16:11:26] INFO     trade_state          Estado carregado: 21 trades
+[2026-05-08 16:11:26] INFO     bot                  Bot iniciado.
+[2026-05-08 16:11:26] INFO     risk_manager         Contadores diários resetados | Equity=136.25 USDT
+[2026-05-08 16:11:31] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:11:34] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:11:34] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:11:35] INFO     ai_analyzer          [OK] Grok: conf=0.65
+[2026-05-08 16:11:35] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.65 | rec=trade
+[2026-05-08 16:11:45] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:11:45] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:11:46] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:11:46] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:11:58] INFO     triggers             ✓ Gatilhos selecionados: 4 | Idade média: 2.0 candles | Score: 0.841
+[2026-05-08 16:11:58] INFO     bot                  TAOUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['FVG', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:11:59] INFO     ai_analyzer          [OK] Grok: conf=0.82
+[2026-05-08 16:11:59] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.82 | rec=trade
+[2026-05-08 16:12:03] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:12:03] INFO     bot                  FARTCOINUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:12:04] INFO     ai_analyzer          [OK] Grok: conf=0.85
+[2026-05-08 16:12:04] INFO     ai_analyzer          [OK] FARTCOINUSDT via Grok | conf=0.85 | rec=trade
+[2026-05-08 16:12:20] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 4.0 candles | Score: 0.707
+[2026-05-08 16:12:20] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:12:21] INFO     ai_analyzer          [OK] Grok: conf=0.82
+[2026-05-08 16:12:21] INFO     ai_analyzer          [OK] LINKUSDT via Grok | conf=0.82 | rec=trade
+[2026-05-08 16:12:25] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:12:31] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:12:31] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:12:32] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:12:32] INFO     ai_analyzer          [OK] VIRTUALUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:12:35] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:12:35] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:12:36] INFO     ai_analyzer          [OK] Grok: conf=0.85
+[2026-05-08 16:12:36] INFO     ai_analyzer          [OK] XAUUSDT via Grok | conf=0.85 | rec=trade
+[2026-05-08 16:12:40] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:12:40] INFO     bot                  ZECUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:12:42] INFO     ai_analyzer          [OK] Grok: conf=0.82
+[2026-05-08 16:12:42] INFO     ai_analyzer          [OK] ZECUSDT via Grok | conf=0.82 | rec=trade
+[2026-05-08 16:13:46] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:13:46] INFO     bot                  BTCUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:13:47] INFO     ai_analyzer          [OK] Grok: conf=0.85
+[2026-05-08 16:13:47] INFO     ai_analyzer          [OK] BTCUSDT via Grok | conf=0.85 | rec=trade
+[2026-05-08 16:13:51] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:13:51] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:13:52] INFO     ai_analyzer          [OK] Grok: conf=0.68
+[2026-05-08 16:13:52] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.68 | rec=trade
+[2026-05-08 16:14:03] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:14:03] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:14:04] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:14:04] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:14:16] INFO     triggers             ✓ Gatilhos selecionados: 4 | Idade média: 2.0 candles | Score: 0.761
+[2026-05-08 16:14:16] INFO     bot                  TAOUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['FVG', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:14:17] INFO     ai_analyzer          [OK] Grok: conf=0.82
+[2026-05-08 16:14:17] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.82 | rec=trade
+[2026-05-08 16:14:21] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:14:21] INFO     bot                  FARTCOINUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:14:23] INFO     ai_analyzer          [OK] Grok: conf=0.85
+[2026-05-08 16:14:23] INFO     ai_analyzer          [OK] FARTCOINUSDT via Grok | conf=0.85 | rec=trade
+[2026-05-08 16:14:38] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 4.0 candles | Score: 0.707
+[2026-05-08 16:14:38] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:14:39] INFO     ai_analyzer          [OK] Grok: conf=0.82
+[2026-05-08 16:14:39] INFO     ai_analyzer          [OK] LINKUSDT via Grok | conf=0.82 | rec=trade
+[2026-05-08 16:14:43] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:14:51] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:14:51] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:14:52] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:14:52] INFO     ai_analyzer          [OK] VIRTUALUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:14:55] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:14:55] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:14:56] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:14:56] INFO     ai_analyzer          [OK] XAUUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:15:00] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:15:00] INFO     bot                  ZECUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:15:01] INFO     ai_analyzer          [OK] Grok: conf=0.82
+[2026-05-08 16:15:01] INFO     ai_analyzer          [OK] ZECUSDT via Grok | conf=0.82 | rec=trade
+[2026-05-08 16:16:06] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:16:06] INFO     bot                  BTCUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:16:08] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:16:08] INFO     ai_analyzer          [OK] BTCUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:16:12] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:16:12] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:16:13] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:16:13] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:16:22] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:16:22] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:16:23] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:16:23] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:16:36] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:16:36] INFO     bot                  TAOUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:16:37] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:16:37] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:16:56] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.665
+[2026-05-08 16:16:56] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:16:58] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:16:58] INFO     ai_analyzer          [OK] LINKUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:17:09] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:17:09] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:17:09] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:17:09] INFO     ai_analyzer          [OK] VIRTUALUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:17:13] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:17:13] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:17:14] INFO     ai_analyzer          [OK] Grok: conf=0.70
+[2026-05-08 16:17:14] INFO     ai_analyzer          [OK] XAUUSDT via Grok | conf=0.70 | rec=trade
+[2026-05-08 16:17:18] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 2.5 candles | Score: 0.506
+[2026-05-08 16:17:18] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POI', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:17:19] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:17:19] INFO     ai_analyzer          [OK] ZECUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:18:23] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:18:23] INFO     bot                  BTCUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:18:24] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:18:24] INFO     ai_analyzer          [OK] BTCUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:18:28] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:18:28] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:18:29] INFO     ai_analyzer          [OK] Grok: conf=0.68
+[2026-05-08 16:18:29] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.68 | rec=trade
+[2026-05-08 16:18:38] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:18:38] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:18:39] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:18:39] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:18:53] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:18:53] INFO     bot                  TAOUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:18:54] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:18:54] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:19:13] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.665
+[2026-05-08 16:19:13] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:19:14] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:19:14] INFO     ai_analyzer          [OK] LINKUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:19:21] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 4.0 candles | Score: 0.673
+[2026-05-08 16:19:21] INFO     bot                  AAVEUSDT | Contextos: ['advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:19:21] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:19:21] INFO     ai_analyzer          [OK] AAVEUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:19:24] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:19:24] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:19:25] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:19:25] INFO     ai_analyzer          [OK] VIRTUALUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:19:29] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:19:29] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:19:30] INFO     ai_analyzer          [OK] Grok: conf=0.70
+[2026-05-08 16:19:30] INFO     ai_analyzer          [OK] XAUUSDT via Grok | conf=0.70 | rec=trade
+[2026-05-08 16:19:34] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:19:34] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:19:35] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:19:35] INFO     ai_analyzer          [OK] ZECUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:20:39] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:20:42] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:20:42] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:20:43] INFO     ai_analyzer          [OK] Grok: conf=0.68
+[2026-05-08 16:20:43] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.68 | rec=trade
+[2026-05-08 16:20:52] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:20:52] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:20:53] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:20:53] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:21:05] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:21:05] INFO     bot                  TAOUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:21:06] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:21:06] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:21:25] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.665
+[2026-05-08 16:21:25] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:21:26] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:21:26] INFO     ai_analyzer          [OK] LINKUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:21:35] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:21:35] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:21:36] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:21:36] INFO     ai_analyzer          [OK] VIRTUALUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:21:40] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:21:40] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:21:41] INFO     ai_analyzer          [OK] Grok: conf=0.70
+[2026-05-08 16:21:41] INFO     ai_analyzer          [OK] XAUUSDT via Grok | conf=0.70 | rec=trade
+[2026-05-08 16:21:44] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:21:44] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:21:45] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:21:45] INFO     ai_analyzer          [OK] ZECUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:22:50] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:22:50] INFO     bot                  BTCUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:22:51] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:22:51] INFO     ai_analyzer          [OK] BTCUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:22:55] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:22:55] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:22:56] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:22:56] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:23:06] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:23:06] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:23:07] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:23:07] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:23:21] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:23:21] INFO     bot                  TAOUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:23:22] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:23:22] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:23:42] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.665
+[2026-05-08 16:23:42] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:23:43] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:23:43] INFO     ai_analyzer          [OK] LINKUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:23:48] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:23:56] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:23:56] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:23:57] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:23:57] INFO     ai_analyzer          [OK] VIRTUALUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:24:00] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:24:00] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:24:01] INFO     ai_analyzer          [OK] Grok: conf=0.70
+[2026-05-08 16:24:01] INFO     ai_analyzer          [OK] XAUUSDT via Grok | conf=0.70 | rec=trade
+[2026-05-08 16:24:05] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:24:05] INFO     bot                  ZECUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:24:06] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:24:06] INFO     ai_analyzer          [OK] ZECUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:25:11] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:25:14] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:25:14] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:25:15] INFO     ai_analyzer          [OK] Grok: conf=0.68
+[2026-05-08 16:25:15] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.68 | rec=trade
+[2026-05-08 16:25:24] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:25:24] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:25:25] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:25:25] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:25:38] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:25:38] INFO     bot                  TAOUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:25:39] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:25:39] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:26:00] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.665
+[2026-05-08 16:26:00] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:26:01] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:26:01] INFO     ai_analyzer          [OK] LINKUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:26:05] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:26:08] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 4.0 candles | Score: 0.673
+[2026-05-08 16:26:08] INFO     bot                  AAVEUSDT | Contextos: ['advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:26:09] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:26:09] INFO     ai_analyzer          [OK] AAVEUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:26:12] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:26:12] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:26:13] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:26:13] INFO     ai_analyzer          [OK] VIRTUALUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:26:16] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:26:16] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:26:17] INFO     ai_analyzer          [OK] Grok: conf=0.70
+[2026-05-08 16:26:17] INFO     ai_analyzer          [OK] XAUUSDT via Grok | conf=0.70 | rec=trade
+[2026-05-08 16:26:21] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:26:21] INFO     bot                  ZECUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:26:22] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:26:22] INFO     ai_analyzer          [OK] ZECUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:27:26] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:27:29] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:27:29] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:27:30] INFO     ai_analyzer          [OK] Grok: conf=0.65
+[2026-05-08 16:27:30] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.65 | rec=trade
+[2026-05-08 16:27:40] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:27:40] INFO     bot                  XRPUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:27:41] INFO     ai_analyzer          [OK] Grok: conf=0.80
+[2026-05-08 16:27:41] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.80 | rec=trade
+[2026-05-08 16:27:53] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:27:53] INFO     bot                  TAOUSDT | Contextos: ['liquidity', 'macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:27:54] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:27:54] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:27:59] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:27:59] INFO     bot                  FARTCOINUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:28:00] INFO     ai_analyzer          [OK] Grok: conf=0.85
+[2026-05-08 16:28:00] INFO     ai_analyzer          [OK] FARTCOINUSDT via Grok | conf=0.85 | rec=trade
+[2026-05-08 16:28:16] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 5.0 candles | Score: 0.665
+[2026-05-08 16:28:16] INFO     bot                  LINKUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:28:17] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:28:17] INFO     ai_analyzer          [OK] LINKUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:28:20] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:28:23] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 4.0 candles | Score: 0.673
+[2026-05-08 16:28:23] INFO     bot                  AAVEUSDT | Contextos: ['advanced'] | Gatilhos: ['FVG'] | Dir: Buy
+[2026-05-08 16:28:24] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:28:24] INFO     ai_analyzer          [OK] AAVEUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:28:27] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:28:27] INFO     bot                  VIRTUALUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:28:28] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:28:28] INFO     ai_analyzer          [OK] VIRTUALUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:28:32] INFO     triggers             ✓ Gatilhos selecionados: 6 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:28:32] INFO     bot                  XAUUSDT | Contextos: ['advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:28:33] INFO     ai_analyzer          [OK] Grok: conf=0.70
+[2026-05-08 16:28:33] INFO     ai_analyzer          [OK] XAUUSDT via Grok | conf=0.70 | rec=trade
+[2026-05-08 16:28:37] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:28:37] INFO     bot                  ZECUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:28:38] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:28:38] INFO     ai_analyzer          [OK] ZECUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:29:43] INFO     triggers             ✓ Gatilhos selecionados: 2 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:29:43] INFO     bot                  BTCUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:29:44] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:29:44] INFO     ai_analyzer          [OK] BTCUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:29:49] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:29:49] INFO     bot                  ETHUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Sell
+[2026-05-08 16:29:50] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:29:50] INFO     ai_analyzer          [OK] ETHUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:30:00] INFO     triggers             ✓ Gatilhos selecionados: 1 | Idade média: 0.0 candles | Score: 0.905
+[2026-05-08 16:30:00] INFO     bot                  XRPUSDT | Contextos: ['breakout', 'advanced'] | Gatilhos: ['POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:30:01] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:30:01] INFO     ai_analyzer          [OK] XRPUSDT via Grok | conf=0.72 | rec=trade
+[2026-05-08 16:30:16] INFO     triggers             ✓ Gatilhos selecionados: 3 | Idade média: 0.0 candles | Score: 0.825
+[2026-05-08 16:30:16] INFO     bot                  TAOUSDT | Contextos: ['macro_micro', 'advanced'] | Gatilhos: ['POLARITY_CHANGE', 'POLARITY_CHANGE', 'POLARITY_CHANGE'] | Dir: Buy
+[2026-05-08 16:30:17] INFO     ai_analyzer          [OK] Grok: conf=0.72
+[2026-05-08 16:30:17] INFO     ai_analyzer          [OK] TAOUSDT via Grok | conf=0.72 | rec=trade

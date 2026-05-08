@@ -25,16 +25,8 @@ class Config:
 
     # ── Groq AI (gratuito) ─────────────────────────────────────
     # Crie sua chave gratuita em: https://console.groq.com (sem cartão)
+    # Se não configurado, o sistema usa fallback automático
     GROQ_API_KEY: str = field(default_factory=lambda: os.getenv("GROQ_API_KEY", ""))
-
-    # ── AI Multi-Provider (Ollama + Together AI + Fallback) ───────
-    # 1. OLLAMA (local, ilimitado) - https://ollama.ai
-    OLLAMA_URL: str = field(default_factory=lambda: os.getenv("OLLAMA_URL", "http://localhost:11434"))
-    
-    # 2. TOGETHER AI (cloud, ~100/dia grátis) - https://www.together.ai/
-    TOGETHER_API_KEY: str = field(default_factory=lambda: os.getenv("TOGETHER_API_KEY", ""))
-    
-    # 3. Fallback automático (análise calculada, sem IA)
 
     # ── Gerenciamento de Risco ─────────────────────────────────
     RISK_PER_TRADE: float = 0.02          # 2% do saldo por trade

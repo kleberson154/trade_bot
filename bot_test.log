@@ -1,8 +1,0 @@
-[2026-05-07 11:33:36] INFO     main                 ============================================================
-[2026-05-07 11:33:36] INFO     main                   AI TRADE BOT - Bybit Futures
-[2026-05-07 11:33:36] INFO     main                   Versão 1.0.0
-[2026-05-07 11:33:36] INFO     main                 ============================================================
-[2026-05-07 11:33:36] INFO     bybit_client         BybitClient iniciado | modo=demo | endpoint=https://api-demo.bybit.com
-[2026-05-07 11:33:36] INFO     trade_state          Estado carregado: 4 trades
-[2026-05-07 11:33:36] INFO     bot                  Bot iniciado.
-[2026-05-07 11:33:37] INFO     risk_manager         Contadores diários resetados | Equity=133.35 USDT

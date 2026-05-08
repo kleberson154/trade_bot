@@ -35,11 +35,7 @@ class TradingBot:
         )
         self.context_analyzer = ContextAnalyzer()
         self.trigger_analyzer = TriggerAnalyzer(config=config)
-        self.ai_analyzer = AIAnalyzer(
-            groq_key=config.GROQ_API_KEY,
-            together_key=config.TOGETHER_API_KEY,
-            ollama_url=config.OLLAMA_URL,
-        )
+        self.ai_analyzer = AIAnalyzer(groq_key=config.GROQ_API_KEY)
         self.risk_manager = RiskManager(config)
         self.state = TradeStateManager()
         self.telegram = TelegramNotifier(
