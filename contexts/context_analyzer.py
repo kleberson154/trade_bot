@@ -5,17 +5,39 @@ Análise de Contextos de Mercado:
 - Inversão de Fluxo
 - Rompimento de Regiões
 - Macro e Micro
+- NOVO: 10 Análises Avançadas (Regiões, Liquidez Int/Ext, Wyckoff Nomeado, SMS, Laterais, etc)
 """
 
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from strategies.indicators import (
     find_swing_highs_lows,
     identify_market_structure,
     analyze_volume,
     add_emas,
     add_atr,
+)
+from strategies.advanced_liquidity_analysis import (
+    LiquidityRegions,
+    InternalExternalLiquidity,
+    NamedWyckoffStructures,
+    ShiftOfMarketStructure,
+    LateralCorrections,
+    LegThreeFlowReversal,
+    DailyOperationalPlan,
+    InternalStructureLiquidityCapture,
+    ContinuityPOIValidation,
+    ManipulationVsRealDetection,
+)
+from strategies.block_validation_system import (
+    DemandSupplyValidator,
+    OrderBlockLegitimacyChecker,
+)
+from strategies.btc_macro_indicator import (
+    BTCDominanceAnalyzer,
+    BTCTrendValidator,
+    BTCMacroAnalyzer,
 )
 from utils.logger import setup_logger
 
@@ -316,12 +338,16 @@ def analyze_macro_micro(
 
 class ContextAnalyzer:
     """Executa todos os analisadores de contexto e retorna resultados combinados."""
+    
+    def __init__(self):
+        self.daily_plan = DailyOperationalPlan()
 
     def analyze_all(
         self,
         df_primary: pd.DataFrame,
         df_macro: pd.DataFrame,
         df_micro: pd.DataFrame,
+        advanced: bool = True  # Ativa 10 análises avançadas
     ) -> Dict:
         contexts = {}
 
@@ -330,6 +356,10 @@ class ContextAnalyzer:
         contexts["flow_inversion"] = analyze_flow_inversion(df_primary)
         contexts["breakout"] = analyze_breakout(df_primary)
         contexts["macro_micro"] = analyze_macro_micro(df_macro, df_micro)
+
+        # NOVO: 10 Análises Avançadas
+        if advanced:
+            contexts["advanced"] = self.analyze_advanced_structures(df_primary)
 
         # Contextos ativos
         active = {k: v for k, v in contexts.items() if v.get("detected")}
@@ -352,3 +382,169 @@ class ContextAnalyzer:
             "context_score": round(context_score, 3),
             "descriptions": [v.get("description", "") for v in active.values() if v.get("description")],
         }
+    
+    def analyze_advanced_structures(self, df: pd.DataFrame) -> Dict:
+        """
+        NOVO: 10 Análises Avançadas
+        1. Regiões de Liquidez Mapeadas
+        2. Liquidez Interna vs Externa
+        3. Estruturas Wyckoff Nomeadas
+        4. SMS - Shift of Market Structure
+        5. Correções Laterais
+        6. Pernada 3 de Inversão
+        7. (Plano é global)
+        8. Capturas Dentro de Estrutura
+        9. Validação POI Continuidade
+        10. Manipulação vs Real
+        """
+        
+        result = {
+            "detected": False,
+            "structures": [],
+            "bonuses": 0.0,  # Bonificação total
+            "description": ""
+        }
+        
+        # 1. Regiões de Liquidez
+        liq_zones = LiquidityRegions.map_liquidity_zones(df, lookback=50)
+        if liq_zones["swing_highs"] or liq_zones["swing_lows"]:
+            result["structures"].append({"type": "liquidity_zones", "data": liq_zones})
+        
+        # 2. Liquidez Interna vs Externa
+        if "atr" in df.columns:
+            low_min, high_max = df["low"].min(), df["high"].max()
+            int_ext = InternalExternalLiquidity.analyze_liquidity_location(df, (low_min, high_max))
+            if int_ext["type"] == "internal":
+                result["bonuses"] += 0.15  # +15% confiança para liquidez interna
+            result["structures"].append({"type": "int_ext_liquidity", "data": int_ext})
+        
+        # 3. Estruturas Wyckoff Nomeadas
+        wyckoff_named = NamedWyckoffStructures.detect_wyckoff_structures(df)
+        if wyckoff_named["structures"]:
+            for struct in wyckoff_named["structures"]:
+                result["bonuses"] += struct.get("confidence", 0) * 0.10
+            result["structures"].append({"type": "wyckoff_named", "data": wyckoff_named})
+        
+        # 4. SMS - Shift of Market Structure
+        sms = ShiftOfMarketStructure.detect_sms(df)
+        if sms["detected"]:
+            result["bonuses"] -= 0.15  # -15% confiança (relutância = esgotamento)
+            result["structures"].append({"type": "sms", "data": sms})
+        
+        # 5. Correções Laterais (Reacumulação/Redistribuição)
+        laterals = LateralCorrections.detect_lateral_phase(df)
+        if laterals["detected"]:
+            result["bonuses"] += laterals["bonus_confidence"]
+            result["structures"].append({"type": "lateral_correction", "data": laterals})
+        
+        # 6. Pernada 3 de Inversão
+        leg3 = LegThreeFlowReversal.detect_leg_three(df)
+        if leg3["detected"]:
+            result["bonuses"] += leg3["bonus"]
+            result["structures"].append({"type": "leg_three", "data": leg3})
+        
+        # 8. Capturas Dentro de Estrutura
+        internal_captures = InternalStructureLiquidityCapture.detect_internal_capture(df, max(0, len(df) - 30))
+        if internal_captures["detected"]:
+            result["bonuses"] += len(internal_captures["captures"]) * 0.10
+            result["structures"].append({"type": "internal_captures", "data": internal_captures})
+        
+        # 9. Validação POI Continuidade
+        # (precisa de entrada do POI level, assume último swing)
+        swings = find_swing_highs_lows(df, lookback=10)
+        if not swings["swing_high"].empty:
+            poi_level = df[swings["swing_high"]]["high"].iloc[-1]
+            poi_val = ContinuityPOIValidation.validate_poi_continuation(df, poi_level)
+            if poi_val["is_continuation"]:
+                result["bonuses"] += poi_val["bonus"]
+            result["structures"].append({"type": "poi_continuity", "data": poi_val})
+        
+        # NOVO: 11. Validação Demand/Supply Breakout (Sem demanda/Sem oferta)
+        ds_regions = DemandSupplyValidator.detect_demand_supply_regions(df, lookback=50)
+        if ds_regions["active_demand"] or ds_regions["active_supply"]:
+            result["structures"].append({"type": "demand_supply_regions", "data": ds_regions})
+        
+        # NOVO: 12. Validação Order Block Legitimidade (OB é consolidação?)
+        ob_blocks = OrderBlockLegitimacyChecker.detect_order_blocks(df, lookback=50)
+        if ob_blocks["strongest_buy_block"] or ob_blocks["strongest_sell_block"]:
+            result["structures"].append({"type": "order_blocks_detected", "data": ob_blocks})
+        
+        # 10. Manipulação vs Real
+        manip_check = ManipulationVsRealDetection.validate_capture_authenticity(df)
+        if not manip_check["is_real"]:
+            result["bonuses"] *= manip_check["confidence_multiplier"]
+        result["structures"].append({"type": "manip_check", "data": manip_check})
+        
+        result["detected"] = len(result["structures"]) > 0
+        result["bonuses"] = round(max(result["bonuses"], -0.4), 2)  # Limita entre -40% e +XXX%
+        result["description"] = f"Análises avançadas | Estruturas={len(result['structures'])} | Bonus={result['bonuses']:+.1%}"
+        
+        return result
+    
+    def validate_demand_supply_breakout(
+        self,
+        df: pd.DataFrame,
+        poi_level: float,
+        direction: str
+    ) -> Dict:
+        """
+        Valida se um rompimento é legítimo (sem demanda/sem oferta).
+        
+        Args:
+            df: DataFrame OHLCV
+            poi_level: Nível de POI que foi rompido
+            direction: "buy" (rompeu oferta) ou "sell" (rompeu demanda)
+        
+        Returns: {is_legitimate, confidence, bonus, entry_action, ...}
+        """
+        return DemandSupplyValidator.validate_breakout(df, poi_level, direction)
+    
+    def validate_order_block_legitimacy(
+        self,
+        df_macro: pd.DataFrame,
+        df_micro: pd.DataFrame,
+        ob_price: float,
+        direction: str
+    ) -> Dict:
+        """
+        Valida se um Order Block é legítimo (nascido de consolidação).
+        
+        Args:
+            df_macro: DataFrame com TF maior (1h, 4h)
+            df_micro: DataFrame com TF menor (5m, 15m)
+            ob_price: Preço do OB
+            direction: "buy" ou "sell"
+        
+        Returns: {is_legitimate, confidence, bonus, validity_level, ...}
+        """
+        return OrderBlockLegitimacyChecker.validate_order_block(df_macro, df_micro, ob_price, direction)
+    
+    def validate_with_daily_plan(self, symbol: str, direction: str, entry: float) -> Dict:
+        """
+        7. Validação de Plano Operacional Diário
+        """
+        return self.daily_plan.validate_trade(symbol, direction, entry)
+    
+    def set_daily_plan(self, direction: str, context: str, key_levels: List[float]):
+        """Define o plano operacional do dia."""
+        self.daily_plan.create_plan(
+            pd.DataFrame(),  # dummy
+            direction,
+            context,
+            key_levels
+        )
+    
+    def analyze_btc_macro(self, df_btc: pd.DataFrame, trade_direction: str) -> Dict:
+        """
+        NOVO: Análise Macro do Bitcoin
+        13. Dominância do BTC + Tendência
+        
+        Args:
+            df_btc: DataFrame com dados BTC (1h ou TF correspondente)
+            trade_direction: "buy" ou "sell"
+        
+        Returns: Análise completa com bonuses de dominância e trend
+        """
+        return BTCMacroAnalyzer.analyze_btc_macro(df_btc, trade_direction)
+
+

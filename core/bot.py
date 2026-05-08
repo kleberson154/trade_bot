@@ -9,7 +9,7 @@ from typing import Optional
 from utils.config import Config
 from utils.logger import setup_logger
 from data.bybit_client import BybitClient
-from strategies.indicators import analyze_volume, add_atr
+from strategies.indicators import analyze_volume, add_atr, find_swing_highs_lows
 from contexts.context_analyzer import ContextAnalyzer
 from triggers.trigger_analyzer import TriggerAnalyzer
 from strategies.ai_analyzer import AIAnalyzer
@@ -253,10 +253,28 @@ class TradingBot:
             return
 
         # 2. Análise de contextos
-        context_result = self.context_analyzer.analyze_all(df_primary, df_macro, df_micro)
+        context_result = self.context_analyzer.analyze_all(df_primary, df_macro, df_micro, advanced=True)
 
         if context_result["active_count"] == 0:
             return
+        
+        # NOVO: Análises Avançadas (10 pontos)
+        advanced_analysis = context_result.get("contexts", {}).get("advanced", {})
+        advanced_bonus = advanced_analysis.get("bonuses", 0.0)
+        logger.debug(f"{symbol} | Análises Avançadas: bonus={advanced_bonus:+.1%}")
+        
+        # NOVO: Análise Macro do Bitcoin (Dominância + Trend)
+        btc_macro_analysis = {}
+        btc_macro_bonus = 0.0
+        if symbol != "BTCUSDT":  # Só analisar BTC macro para altcoins
+            try:
+                df_btc = self.exchange.get_klines("BTCUSDT", self.cfg.PRIMARY_TF, 100)
+                if not df_btc.empty and len(df_btc) >= 50:
+                    btc_macro_analysis = self.context_analyzer.analyze_btc_macro(df_btc, trigger_result.get("direction", "buy"))
+                    btc_macro_bonus = btc_macro_analysis.get("total_bonus", 0.0)
+                    logger.debug(f"{symbol} | BTC Macro: {btc_macro_analysis.get('recommendation', '')} (bonus={btc_macro_bonus:+.1%})")
+            except Exception as e:
+                logger.debug(f"{symbol} | Erro análise BTC macro: {e}")
 
         direction_bias = context_result["direction"]
 
@@ -323,7 +341,7 @@ class TradingBot:
                 logger.debug(f"{symbol} | Trade {trade_type} rejeitada: {margin_msg}")
                 return
 
-        # Confiança final: média ponderada + bônus por múltiplos contextos/gatilhos
+        # Confiança final: média ponderada + bônus por múltiplos contextos/gatilhos + ANÁLISES AVANÇADAS
         confidence = self._calculate_confidence_with_bonus(
             context_score=context_result["context_score"],
             trigger_score=trigger_result["trigger_score"],
@@ -331,6 +349,65 @@ class TradingBot:
             context_count=context_result["active_count"],
             trigger_count=trigger_result["trigger_count"],
         )
+        
+        # NOVO: Aplicar bonuses das análises avançadas
+        confidence += advanced_bonus
+        
+        # NOVO: Aplicar bonuses da análise BTC macro
+        confidence += btc_macro_bonus
+        confidence = min(max(confidence, 0.0), 1.0)  # Limita entre 0 e 1
+        
+        # NOVO: 7. Validar com Plano Operacional Diário
+        plan_validation = self.context_analyzer.validate_with_daily_plan(
+            symbol=symbol,
+            direction=trigger_result["direction"],
+            entry=trigger_result["entry"]
+        )
+        if not plan_validation["is_valid"]:
+            logger.warning(f"{symbol} | {plan_validation['reason']}")
+            confidence -= plan_validation["penalty"]
+        
+        # NOVO: 11. Validação Demand/Supply Breakout (Sem demanda/Sem oferta)
+        ds_bonus = 0.0
+        ds_validation = None
+        try:
+            # Buscar último swing high/low como POI
+            swings = find_swing_highs_lows(df_primary, lookback=10)
+            if not swings["swing_high"].empty or not swings["swing_low"].empty:
+                if trigger_result["direction"] == "sell":
+                    # Rompeu POI de demanda (compra)
+                    poi_level = df_primary[swings["swing_low"]]["low"].iloc[-1]
+                else:
+                    # Rompeu POI de oferta (venda)
+                    poi_level = df_primary[swings["swing_high"]]["high"].iloc[-1]
+                
+                ds_validation = self.context_analyzer.validate_demand_supply_breakout(
+                    df_primary, poi_level, trigger_result["direction"]
+                )
+                ds_bonus = ds_validation.get("bonus", 0.0)
+                if ds_validation["is_legitimate"]:
+                    logger.info(f"{symbol} | Validação D/S: {ds_validation['reason']} (bonus={ds_bonus:+.1%})")
+                else:
+                    logger.warning(f"{symbol} | Rompimento FAKE: {ds_validation['reason']} (penalidade={ds_bonus:+.1%})")
+                confidence += ds_bonus
+        except Exception as e:
+            logger.debug(f"{symbol} | Erro na validação D/S: {e}")
+        
+        # NOVO: 12. Validação Order Block Legitimidade (OB é consolidação?)
+        ob_bonus = 0.0
+        ob_validation = None
+        try:
+            ob_validation = self.context_analyzer.validate_order_block_legitimacy(
+                df_macro, df_primary, trigger_result["entry"], trigger_result["direction"]
+            )
+            ob_bonus = ob_validation.get("bonus", 0.0)
+            if ob_validation["is_legitimate"]:
+                logger.info(f"{symbol} | OB {ob_validation['validity_level']}: {ob_validation['reason']} (bonus={ob_bonus:+.1%})")
+            else:
+                logger.warning(f"{symbol} | OB FAKE: {ob_validation['reason']} (penalidade={ob_bonus:+.1%})")
+            confidence += ob_bonus
+        except Exception as e:
+            logger.debug(f"{symbol} | Erro na validação OB: {e}")
 
         if confidence < self.cfg.MIN_CONFLUENCE_SCORE:
             logger.debug(f"{symbol} | Confiança insuficiente: {confidence:.2f}")
@@ -358,8 +435,8 @@ class TradingBot:
                 return
 
         logger.info(
-            f"🎯 SINAL VÁLIDO [{trade_type}]: {symbol} {trade_params.side} | "
-            f"conf={confidence:.2f} | bônus={bonus_total:.3f} | "
+            f"[{trade_type}] {symbol} {trade_params.side} | "
+            f"conf={confidence:.2f} ({advanced_bonus:+.1%} avançadas) | "
             f"lev={trade_params.leverage}x | RR=1:{trade_params.rr_ratio}"
         )
 
@@ -370,12 +447,22 @@ class TradingBot:
             trigger_result=trigger_result,
             ai_result=ai_result,
             trade_strength=trade_type,
+            advanced_analysis=advanced_analysis,
+            ds_validation=ds_validation,
+            ob_validation=ob_validation,
         )
 
     # ── Execução de Trade ─────────────────────────────────────────────────────
 
-    async def _execute_trade(self, params, context_result, trigger_result, ai_result, trade_strength: str = "BASE ✓"):
+    async def _execute_trade(self, params, context_result, trigger_result, ai_result, trade_strength: str = "BASE ✓", advanced_analysis: dict = None, ds_validation: dict = None, ob_validation: dict = None):
         """Executa a ordem na Bybit e registra o trade."""
+        if advanced_analysis is None:
+            advanced_analysis = {}
+        if ds_validation is None:
+            ds_validation = {}
+        if ob_validation is None:
+            ob_validation = {}
+            
         order = self.exchange.place_market_order(
             symbol=params.symbol,
             side=params.side,
@@ -407,7 +494,16 @@ class TradingBot:
             order_id=order.get("order_id"),
         )
 
-        # Notifica Telegram
+        # Notifica Telegram (com análises avançadas)
+        advanced_desc = advanced_analysis.get("description", "")
+        
+        # Validações extras (D/S e OB)
+        validation_desc = ""
+        if ds_validation and ds_validation.get("is_legitimate"):
+            validation_desc += f"✓ {ds_validation.get('reason', '')} | "
+        if ob_validation and ob_validation.get("is_legitimate"):
+            validation_desc += f"✓ OB {ob_validation.get('validity_level', '')} | "
+        
         await self.telegram.notify_trade_open(
             symbol=params.symbol,
             side=params.side,
@@ -423,6 +519,8 @@ class TradingBot:
             contexts=context_result["active_contexts"],
             ai_reasoning=ai_result["reasoning"],
             trade_strength=trade_strength,
+            advanced_techniques=advanced_desc,
+            validation_notes=validation_desc,
         )
 
     # ── Monitoramento de Posições ─────────────────────────────────────────────
