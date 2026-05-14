@@ -274,7 +274,7 @@ class TradingBot:
         if not liquidity_validation["workflow_valid"]:
             current_step = liquidity_validation["current_step"]
             reason = liquidity_validation["reason"]
-            logger.debug(f"{symbol} | Fluxo de Liquidez: Etapa {current_step} incompleta - {reason}")
+            logger.info(f"{symbol} | Fluxo de Liquidez BLOQUEADO | etapa={current_step} | motivo={reason}")
             return
         
         logger.info(

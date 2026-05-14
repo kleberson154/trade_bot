@@ -7,6 +7,7 @@
 O bot agora **OBRIGATORIAMENTE** segue o fluxo de trabalho de 5 passos baseado no **Manual de Liquidez - Como Pensar e Operar Como o Dinheiro Inteligente**.
 
 Isso garante que o bot:
+
 - ✅ Nunca entra ANTES da liquidez ser capturada
 - ✅ Só entra NO pullback (nunca no impulso)
 - ✅ Segue a disciplina profissional de entrada
@@ -17,6 +18,7 @@ Isso garante que o bot:
 ## 🎯 Os 5 Passos Obrigatórios
 
 ### **Passo 1: Identificar Liquidez**
+
 Detecta padrões óbvios onde há concentração de stops e ordens pendentes:
 
 - **Topos Iguais** (Equal Highs): Múltiplos toques no mesmo nível = stops de venda
@@ -28,6 +30,7 @@ Detectado por: LiquidityWorkflow.step_1_identify_liquidity()
 ```
 
 ### **Passo 2: Esperar o Sweep**
+
 O mercado inteligente captura os stops antes do movimento real:
 
 - Penetração rápida da liquidez identificada
@@ -39,6 +42,7 @@ Detectado por: LiquidityWorkflow.step_2_wait_for_sweep()
 ```
 
 ### **Passo 3: Confirmar CHoCH ou BOS**
+
 Validar que houve mudança de estrutura (não é fake):
 
 - **CHoCH** (Change of Character): Última vela fecha acima/abaixo de máximos/mínimos anteriores
@@ -49,6 +53,7 @@ Detectado por: LiquidityWorkflow.step_3_confirm_structure_change()
 ```
 
 ### **Passo 4: Confirmar Fluxo**
+
 Validar que o movimento tem força e volume alinhado:
 
 - Volume > Média móvel de volume
@@ -60,6 +65,7 @@ Detectado por: LiquidityWorkflow.step_4_confirm_flow()
 ```
 
 ### **Passo 5: Entrar no Pullback**
+
 CRÍTICO: Entrar na reação/pullback, NUNCA no impulso:
 
 - Detectar pullback após impulso inicial
@@ -138,14 +144,14 @@ Dados: 250 candles | Esperado: VALIDO
 
 ### Cenários e Decisões
 
-| Cenário | Passo | Decisão |
-|---------|-------|---------|
-| Liquidez óbvia detectada | 1 ✅ | Continua analisando |
-| Mas sem sweep no preço | 2 ❌ | Rejeita: "Sweep não detectado" |
-| Liquidez + Sweep mas sem CHoCH | 3 ❌ | Rejeita: "Estrutura não confirmada" |
-| Tudo válido mas volume fraco | 4 ❌ | Rejeita: "Fluxo não confirmado" |
-| Tudo pronto mas ainda em impulso | 5 ❌ | Rejeita: "Aguardando pullback" |
-| **TODOS os 5 passos validados** | ✅ | Executa trade com confiança |
+| Cenário                          | Passo | Decisão                             |
+| -------------------------------- | ----- | ----------------------------------- |
+| Liquidez óbvia detectada         | 1 ✅  | Continua analisando                 |
+| Mas sem sweep no preço           | 2 ❌  | Rejeita: "Sweep não detectado"      |
+| Liquidez + Sweep mas sem CHoCH   | 3 ❌  | Rejeita: "Estrutura não confirmada" |
+| Tudo válido mas volume fraco     | 4 ❌  | Rejeita: "Fluxo não confirmado"     |
+| Tudo pronto mas ainda em impulso | 5 ❌  | Rejeita: "Aguardando pullback"      |
+| **TODOS os 5 passos validados**  | ✅    | Executa trade com confiança         |
 
 ---
 
@@ -203,6 +209,7 @@ Para ajustar, modifique a classe `LiquidityWorkflow.__init__()`.
 ## 📝 Log de Alterações
 
 ### Commit: `c286f74`
+
 - ✅ `liquidity_workflow.py`: Engine dos 5 passos (450 linhas)
 - ✅ `core/bot.py`: Integração no pipeline
 - ✅ `test_liquidity_workflow.py`: Suite de testes
@@ -212,12 +219,14 @@ Para ajustar, modifique a classe `LiquidityWorkflow.__init__()`.
 ## 🚨 Impacto no Trading
 
 ### Antes (Sem validação):
+
 - ❌ Entradas prematuras (antes do sweep)
 - ❌ Entradas no impulso (false entries)
 - ❌ Whipsaws e false breakouts
 - ❌ Taxa de acerto baixa
 
 ### Depois (Com validação):
+
 - ✅ Entradas profissionais (após sweep)
 - ✅ Entradas no pullback (confirmadas)
 - ✅ Menos whipsaws, mais confiança

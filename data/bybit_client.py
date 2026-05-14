@@ -3,6 +3,7 @@ Conector com a API da Bybit (pybit v5)
 """
 
 import asyncio
+import time
 from typing import Optional, Dict, List, Any, Tuple
 from decimal import Decimal, ROUND_HALF_UP
 import pandas as pd
@@ -14,6 +15,42 @@ logger = setup_logger("bybit_client")
 
 class BybitClient:
     """Wrapper assíncrono para a API Bybit Unified Trading v5."""
+
+    def _is_retryable_error(self, error: Exception) -> bool:
+        error_text = str(error).lower()
+        return any(
+            keyword in error_text
+            for keyword in (
+                "timeout",
+                "timed out",
+                "read timed out",
+                "connecttimeout",
+                "connection aborted",
+                "connection reset",
+                "max retries exceeded",
+                "remote end closed",
+            )
+        )
+
+    def _call_with_retry(self, operation_name: str, func, retries: int = 3, delay_seconds: float = 1.5):
+        last_error = None
+        for attempt in range(1, retries + 1):
+            try:
+                return func()
+            except Exception as error:
+                last_error = error
+                if attempt < retries and self._is_retryable_error(error):
+                    logger.warning(
+                        "%s tentativa %d/%d falhou com erro transitório: %s",
+                        operation_name,
+                        attempt,
+                        retries,
+                        error,
+                    )
+                    time.sleep(delay_seconds * attempt)
+                    continue
+                raise
+        raise last_error
 
     def __init__(self, api_key: str, api_secret: str, mode: str = "testnet"):
         # Validar modo e configurar HTTP corretamente
@@ -47,11 +84,14 @@ class BybitClient:
     ) -> pd.DataFrame:
         """Retorna candles como DataFrame OHLCV."""
         try:
-            resp = self.session.get_kline(
-                category="linear",
-                symbol=symbol,
-                interval=interval,
-                limit=limit,
+            resp = self._call_with_retry(
+                f"get_klines {symbol} {interval}",
+                lambda: self.session.get_kline(
+                    category="linear",
+                    symbol=symbol,
+                    interval=interval,
+                    limit=limit,
+                ),
             )
             raw = resp["result"]["list"]
             if not raw:
@@ -80,7 +120,10 @@ class BybitClient:
     def get_orderbook(self, symbol: str, limit: int = 25) -> Dict:
         """Retorna orderbook do símbolo."""
         try:
-            resp = self.session.get_orderbook(category="linear", symbol=symbol, limit=limit)
+            resp = self._call_with_retry(
+                f"get_orderbook {symbol}",
+                lambda: self.session.get_orderbook(category="linear", symbol=symbol, limit=limit),
+            )
             return resp["result"]
         except Exception as e:
             logger.error(f"Erro get_orderbook {symbol}: {e}")
@@ -89,7 +132,10 @@ class BybitClient:
     def get_ticker(self, symbol: str) -> Dict:
         """Retorna ticker do símbolo."""
         try:
-            resp = self.session.get_tickers(category="linear", symbol=symbol)
+            resp = self._call_with_retry(
+                f"get_ticker {symbol}",
+                lambda: self.session.get_tickers(category="linear", symbol=symbol),
+            )
             return resp["result"]["list"][0]
         except Exception as e:
             logger.error(f"Erro get_ticker {symbol}: {e}")
@@ -100,7 +146,10 @@ class BybitClient:
     def get_wallet_balance(self) -> Dict:
         """Retorna saldo da conta (USDT)."""
         try:
-            resp = self.session.get_wallet_balance(accountType="UNIFIED")
+            resp = self._call_with_retry(
+                "get_wallet_balance",
+                lambda: self.session.get_wallet_balance(accountType="UNIFIED"),
+            )
             account_list = resp["result"]["list"]
             
             # Processa conta UNIFIED
@@ -157,7 +206,10 @@ class BybitClient:
             kwargs = {"category": "linear", "settleCoin": "USDT"}
             if symbol:
                 kwargs["symbol"] = symbol
-            resp = self.session.get_positions(**kwargs)
+            resp = self._call_with_retry(
+                f"get_positions {symbol or 'all'}",
+                lambda: self.session.get_positions(**kwargs),
+            )
             return [p for p in resp["result"]["list"] if float(p.get("size", 0)) > 0]
         except Exception as e:
             logger.error(f"Erro get_positions: {e}")
@@ -168,11 +220,14 @@ class BybitClient:
     def set_leverage(self, symbol: str, leverage: int) -> bool:
         """Define alavancagem do par."""
         try:
-            self.session.set_leverage(
-                category="linear",
-                symbol=symbol,
-                buyLeverage=str(leverage),
-                sellLeverage=str(leverage),
+            self._call_with_retry(
+                f"set_leverage {symbol}",
+                lambda: self.session.set_leverage(
+                    category="linear",
+                    symbol=symbol,
+                    buyLeverage=str(leverage),
+                    sellLeverage=str(leverage),
+                ),
             )
             return True
         except Exception as e:
@@ -185,7 +240,10 @@ class BybitClient:
     def get_instrument_info(self, symbol: str) -> Optional[Dict]:
         """Retorna informações do instrumento (min/max qty, precision, etc)."""
         try:
-            resp = self.session.get_instruments_info(category="linear", symbol=symbol)
+            resp = self._call_with_retry(
+                f"get_instrument_info {symbol}",
+                lambda: self.session.get_instruments_info(category="linear", symbol=symbol),
+            )
             if resp["result"]["list"]:
                 return resp["result"]["list"][0]
             return None
@@ -263,18 +321,23 @@ class BybitClient:
                 logger.info(f"{symbol} qty ajustada: {qty_original} → {qty} ({qty_msg})")
             
             self.set_leverage(symbol, leverage)
-            resp = self.session.place_order(
-                category="linear",
-                symbol=symbol,
-                side=side,
-                orderType="Market",
-                qty=str(qty),
-                stopLoss=str(round(stop_loss, 4)),
-                takeProfit=str(round(take_profit, 4)),
-                tpslMode="Full",
-                slTriggerBy="MarkPrice",
-                tpTriggerBy="MarkPrice",
-                reduceOnly=False,
+            resp = self._call_with_retry(
+                f"place_market_order {symbol}",
+                lambda: self.session.place_order(
+                    category="linear",
+                    symbol=symbol,
+                    side=side,
+                    orderType="Market",
+                    qty=str(qty),
+                    stopLoss=str(round(stop_loss, 4)),
+                    takeProfit=str(round(take_profit, 4)),
+                    tpslMode="Full",
+                    slTriggerBy="MarkPrice",
+                    tpTriggerBy="MarkPrice",
+                    reduceOnly=False,
+                ),
+                retries=4,
+                delay_seconds=2.0,
             )
             order_id = resp["result"]["orderId"]
             logger.info(f"Ordem aberta: {symbol} {side} qty={qty} SL={stop_loss} TP={take_profit} | id={order_id}")
@@ -288,13 +351,18 @@ class BybitClient:
         """Fecha posição aberta."""
         try:
             close_side = "Sell" if side == "Buy" else "Buy"
-            self.session.place_order(
-                category="linear",
-                symbol=symbol,
-                side=close_side,
-                orderType="Market",
-                qty=str(qty),
-                reduceOnly=True,
+            self._call_with_retry(
+                f"close_position {symbol}",
+                lambda: self.session.place_order(
+                    category="linear",
+                    symbol=symbol,
+                    side=close_side,
+                    orderType="Market",
+                    qty=str(qty),
+                    reduceOnly=True,
+                ),
+                retries=4,
+                delay_seconds=2.0,
             )
             logger.info(f"Posição fechada: {symbol}")
             return True
@@ -308,7 +376,10 @@ class BybitClient:
             kwargs = {"category": "linear", "limit": limit}
             if symbol:
                 kwargs["symbol"] = symbol
-            resp = self.session.get_closed_pnl(**kwargs)
+            resp = self._call_with_retry(
+                f"get_closed_pnl {symbol or 'all'}",
+                lambda: self.session.get_closed_pnl(**kwargs),
+            )
             return resp["result"]["list"]
         except Exception as e:
             logger.error(f"Erro get_closed_pnl: {e}")

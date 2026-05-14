@@ -244,12 +244,12 @@ class TriggerAnalyzer:
 
         # Log da recenticidade dos gatilhos primários (usados para decisão)
         avg_age = sum(t["age_candles"] for t in chosen_primary) / len(chosen_primary)
-        logger.info(f"✓ Gatilhos selecionados: {len(chosen_triggers)} | Idade média: {avg_age:.1f} candles | Score: {trigger_score:.3f}")
+        logger.info(f"Gatilhos selecionados: {len(chosen_primary)} | Idade media: {avg_age:.1f} candles | Score: {trigger_score:.3f}")
 
         # ── Cálculo de Entrada, SL e TP ───────────────────────────────────────
         entry, sl, tp = self._calculate_levels(
             df=df,
-            triggers=chosen_triggers,
+            triggers=chosen_primary,
             direction=trade_direction,
             current_price=current_price,
             atr=atr,

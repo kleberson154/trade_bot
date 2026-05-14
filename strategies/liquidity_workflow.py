@@ -14,6 +14,10 @@ import pandas as pd
 import numpy as np
 from dataclasses import dataclass
 from typing import Dict, Optional, Tuple, List
+from utils.logger import setup_logger
+
+
+logger = setup_logger("liquidity_workflow")
 
 
 @dataclass
@@ -117,6 +121,16 @@ class LiquidityWorkflow:
             self.state.has_equal_highs = len(result['equal_highs']) > 0
             self.state.has_equal_lows = len(result['equal_lows']) > 0
             self.state.has_consolidation = result['consolidation'] is not None
+            logger.info(
+                "Passo 1 OK | tipo=%s nivel=%.4f equal_highs=%d equal_lows=%d consolidacao=%s",
+                result['type'],
+                result['level'],
+                len(result['equal_highs']),
+                len(result['equal_lows']),
+                bool(result['consolidation']),
+            )
+        else:
+            logger.info("Passo 1 falhou | sem liquidez clara no lookback=%d", self.lookback)
         
         return result
     
@@ -172,14 +186,28 @@ class LiquidityWorkflow:
         if result['sweep_detected']:
             self.state.step = 2
             self.state.sweep_confirmed = True
+            logger.info(
+                "Passo 2 OK | direction=%s tipo=%s nivel=%.4f profundidade=%.4f",
+                direction,
+                result['sweep_type'],
+                result['sweep_level'],
+                result['penetration_depth'],
+            )
+        else:
+            logger.info(
+                "Passo 2 falhou | direction=%s nivel_liquidez=%.4f",
+                direction,
+                liquidity_level,
+            )
         
         return result
     
     def step_3_confirm_structure_change(self, df: pd.DataFrame, direction: str) -> Dict:
         """
         PASSO 3: Confirmar CHoCH ou BOS (mudança de estrutura)
-        - CHoCH = Change of Character (mudança de caráter)
-        - BOS = Break of Structure (rompimento de estrutura)
+        - CHoCH = Change of Character (mudança de caráter via swing points)
+        - BOS = Break of Structure (rompimento de nível anterior)
+        - Usa swing points (picos e vales locais) ao invés de apenas última vela
         
         Args:
             df: DataFrame com OHLCV
@@ -190,23 +218,73 @@ class LiquidityWorkflow:
         """
         result = {
             'structure_change': False,
-            'type': None,  # 'choch' ou 'bos'
+            'type': None,  # 'choch_bullish', 'bos_bullish', 'choch_bearish', 'bos_bearish'
             'confirmation_candle': None,
         }
         
         if len(df) < 20:
             return result
         
-        recent = df.iloc[-20:]
+        # Detecta swing highs e lows (picos e vales locais)
+        # Um swing high é um candle com high maior que 2 candles antes e depois
+        # Um swing low é um candle com low menor que 2 candles antes e depois
+        lookback = min(20, len(df) - 1)
+        
+        def find_swings(prices, window=1):
+            """Encontra swing points (máximos e mínimos locais)"""
+            swings = {'highs': [], 'lows': []}
+            for i in range(window, len(prices) - window):
+                # Swing high local - relaxado: apenas comparar com vizinhos diretos
+                if (i == 0 or prices[i] > prices[i-1]) and \
+                   (i == len(prices) - 1 or prices[i] > prices[i+1]):
+                    is_high = True
+                    for j in range(max(0, i-2), min(len(prices), i+3)):
+                        if j != i and prices[j] >= prices[i]:
+                            is_high = False
+                            break
+                    if is_high:
+                        swings['highs'].append((i, prices[i]))
+                
+                # Swing low local - relaxado: apenas comparar com vizinhos diretos
+                if (i == 0 or prices[i] < prices[i-1]) and \
+                   (i == len(prices) - 1 or prices[i] < prices[i+1]):
+                    is_low = True
+                    for j in range(max(0, i-2), min(len(prices), i+3)):
+                        if j != i and prices[j] <= prices[i]:
+                            is_low = False
+                            break
+                    if is_low:
+                        swings['lows'].append((i, prices[i]))
+            return swings
         
         if direction == 'up':
-            # CHoCH Bullish: Última vela fecha acima do máximo dos últimos candles
+            # CHoCH Bullish: novo swing low ACIMA do swing low anterior (estrutura de alta confirmada)
+            # BOS Bullish: preço rompeu para cima da resistência anterior
             last_candle = df.iloc[-1]
-            prev_high = np.max(df.iloc[-21:-1]['high'])
             
-            if last_candle['close'] > prev_high and last_candle['high'] > prev_high:
-                result['structure_change'] = True
-                result['type'] = 'choch'
+            # Detecta swing points nos últimos candles
+            recent_lows = df.iloc[-lookback:]['low'].values
+            recent_highs = df.iloc[-lookback:]['high'].values
+            
+            swings_low = find_swings(recent_lows, window=2)
+            swings_high = find_swings(recent_highs, window=2)
+            
+            # CHoCH bullish: novo swing low MAIS ALTO que o anterior
+            if len(swings_low['lows']) >= 2:
+                latest_swing_low = swings_low['lows'][-1][1]
+                prev_swing_low = swings_low['lows'][-2][1]
+                if latest_swing_low > prev_swing_low:
+                    result['structure_change'] = True
+                    result['type'] = 'choch_bullish'
+            
+            # BOS bullish: rompimento para cima do último swing high
+            elif len(swings_high['highs']) >= 1:
+                prev_high = swings_high['highs'][-1][1]
+                if last_candle['close'] > prev_high:
+                    result['structure_change'] = True
+                    result['type'] = 'bos_bullish'
+            
+            if result['structure_change']:
                 result['confirmation_candle'] = {
                     'open': last_candle['open'],
                     'close': last_candle['close'],
@@ -215,13 +293,33 @@ class LiquidityWorkflow:
                 }
         
         elif direction == 'down':
-            # CHoCH Bearish: Última vela fecha abaixo do mínimo dos últimos candles
+            # CHoCH Bearish: novo swing high ABAIXO do swing high anterior (estrutura de baixa confirmada)
+            # BOS Bearish: preço rompeu para baixo do suporte anterior
             last_candle = df.iloc[-1]
-            prev_low = np.min(df.iloc[-21:-1]['low'])
             
-            if last_candle['close'] < prev_low and last_candle['low'] < prev_low:
-                result['structure_change'] = True
-                result['type'] = 'choch'
+            # Detecta swing points nos últimos candles
+            recent_lows = df.iloc[-lookback:]['low'].values
+            recent_highs = df.iloc[-lookback:]['high'].values
+            
+            swings_low = find_swings(recent_lows, window=2)
+            swings_high = find_swings(recent_highs, window=2)
+            
+            # CHoCH bearish: novo swing high MAIS BAIXO que o anterior
+            if len(swings_high['highs']) >= 2:
+                latest_swing_high = swings_high['highs'][-1][1]
+                prev_swing_high = swings_high['highs'][-2][1]
+                if latest_swing_high < prev_swing_high:
+                    result['structure_change'] = True
+                    result['type'] = 'choch_bearish'
+            
+            # BOS bearish: rompimento para baixo do último swing low
+            elif len(swings_low['lows']) >= 1:
+                prev_low = swings_low['lows'][-1][1]
+                if last_candle['close'] < prev_low:
+                    result['structure_change'] = True
+                    result['type'] = 'bos_bearish'
+            
+            if result['structure_change']:
                 result['confirmation_candle'] = {
                     'open': last_candle['open'],
                     'close': last_candle['close'],
@@ -232,6 +330,14 @@ class LiquidityWorkflow:
         if result['structure_change']:
             self.state.step = 3
             self.state.structure_change_confirmed = True
+            logger.info(
+                "Passo 3 OK | direction=%s tipo=%s candle_confirmacao=%s",
+                direction,
+                result['type'],
+                result['confirmation_candle'],
+            )
+        else:
+            logger.info("Passo 3 falhou | direction=%s sem CHoCH/BOS confirmado", direction)
         
         return result
     
@@ -302,6 +408,18 @@ class LiquidityWorkflow:
         if result['flow_confirmed']:
             self.state.step = 4
             self.state.volume_confirmed = True
+            logger.info(
+                "Passo 4 OK | direction=%s volume_ratio=%.2f strength=%s",
+                direction,
+                result['volume_ratio'] if result['volume_ratio'] is not None else -1.0,
+                result['volume_strength'],
+            )
+        else:
+            logger.info(
+                "Passo 4 falhou | direction=%s volume_ratio=%s",
+                direction,
+                "n/a" if result['volume_ratio'] is None else f"{result['volume_ratio']:.2f}",
+            )
         
         return result
     
@@ -389,6 +507,18 @@ class LiquidityWorkflow:
             self.state.step = 5
             self.state.pullback_detected = True
             self.state.entry_ready = True
+            logger.info(
+                "Passo 5 OK | direction=%s entry_level=%.4f pullback_depth=%.4f",
+                direction,
+                result['entry_level'],
+                result['pullback_depth'],
+            )
+        else:
+            logger.info(
+                "Passo 5 falhou | direction=%s motivo=%s",
+                direction,
+                result['entry_reason'],
+            )
         
         return result
     
@@ -413,6 +543,7 @@ class LiquidityWorkflow:
         # Passo 1: Identificar liquidez
         step1 = self.step_1_identify_liquidity(df)
         if not step1['liquidity_found']:
+            logger.info("Workflow rejeitado na etapa 1 | reason=Liquidez nao identificada")
             return {
                 'workflow_valid': False,
                 'current_step': 0,
@@ -426,6 +557,7 @@ class LiquidityWorkflow:
         # Passo 2: Esperar sweep
         step2 = self.step_2_wait_for_sweep(df, liq_level, direction)
         if not step2['sweep_detected']:
+            logger.info("Workflow rejeitado na etapa 2 | reason=Sweep nao detectado")
             return {
                 'workflow_valid': False,
                 'current_step': 1,
@@ -439,6 +571,7 @@ class LiquidityWorkflow:
         # Passo 3: Confirmar mudança de estrutura
         step3 = self.step_3_confirm_structure_change(df, direction)
         if not step3['structure_change']:
+            logger.info("Workflow rejeitado na etapa 3 | reason=CHoCH/BOS nao confirmado")
             return {
                 'workflow_valid': False,
                 'current_step': 2,
@@ -449,6 +582,7 @@ class LiquidityWorkflow:
         # Passo 4: Confirmar fluxo
         step4 = self.step_4_confirm_flow(df, direction)
         if not step4['flow_confirmed']:
+            logger.info("Workflow rejeitado na etapa 4 | reason=Fluxo nao confirmado")
             return {
                 'workflow_valid': False,
                 'current_step': 3,
@@ -459,6 +593,7 @@ class LiquidityWorkflow:
         # Passo 5: Entrada no pullback
         step5 = self.step_5_entry_pullback(df, direction, sweep_lv)
         if not step5['entry_ready']:
+            logger.info("Workflow rejeitado na etapa 5 | reason=%s", step5['entry_reason'])
             return {
                 'workflow_valid': False,
                 'current_step': 4,
