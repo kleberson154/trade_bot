@@ -349,6 +349,9 @@ class ContextAnalyzer:
         df_micro: pd.DataFrame,
         advanced: bool = True  # Ativa 10 análises avançadas
     ) -> Dict:
+        from utils.config import Config
+        cfg = Config()
+        
         contexts = {}
 
         contexts["liquidity"] = analyze_liquidity_capture(df_primary)
@@ -361,26 +364,35 @@ class ContextAnalyzer:
         if advanced:
             contexts["advanced"] = self.analyze_advanced_structures(df_primary)
 
-        # Contextos ativos
-        active = {k: v for k, v in contexts.items() if v.get("detected")}
-
-        # Direção predominante
-        bullish = sum(1 for v in active.values() if v.get("direction") == "bullish" or v.get("bias") == "bullish")
-        bearish = sum(1 for v in active.values() if v.get("direction") == "bearish" or v.get("bias") == "bearish")
+        # Separa contextos primários vs suporte
+        primary_active = {k: v for k, v in contexts.items() if v.get("detected") and k in cfg.PRIMARY_CONTEXTS}
+        support_active = {k: v for k, v in contexts.items() if v.get("detected") and k in cfg.SUPPORT_CONTEXTS}
+        
+        # Direção predominante (apenas primários)
+        bullish = sum(1 for v in primary_active.values() if v.get("direction") == "bullish" or v.get("bias") == "bullish")
+        bearish = sum(1 for v in primary_active.values() if v.get("direction") == "bearish" or v.get("bias") == "bearish")
 
         direction = "bullish" if bullish > bearish else ("bearish" if bearish > bullish else None)
-        context_score = max(
-            sum(v.get("score", 0) for v in active.values()) / max(len(active), 1),
+        
+        # Score: primários + bônus por suportes alinhados
+        primary_score = max(
+            sum(v.get("score", 0) for v in primary_active.values()) / max(len(primary_active), 1),
             0,
         )
+        
+        # Bônus por suportes alinhados (cada um adiciona 8%)
+        support_bonus = len(support_active) * cfg.SUPPORT_CONTEXT_BONUS
+        context_score = min(primary_score + support_bonus, 1.0)
 
         return {
             "contexts": contexts,
-            "active_contexts": list(active.keys()),
-            "active_count": len(active),
+            "active_contexts": list(primary_active.keys()),  # Apenas primários
+            "support_contexts": list(support_active.keys()),  # Suportes separados
+            "active_count": len(primary_active),
+            "support_count": len(support_active),
             "direction": direction,
             "context_score": round(context_score, 3),
-            "descriptions": [v.get("description", "") for v in active.values() if v.get("description")],
+            "descriptions": [v.get("description", "") for v in primary_active.values() if v.get("description")],
         }
     
     def analyze_advanced_structures(self, df: pd.DataFrame) -> Dict:

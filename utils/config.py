@@ -70,6 +70,33 @@ class Config:
     SCAN_INTERVAL: int = 60       # Segundos entre scans
     STATUS_INTERVAL: int = 3600   # Status a cada 1h
 
+    # ── Gatilhos Primários vs Suporte ──────────────────────────
+    # Gatilhos primários: podem criar trade sozinhos
+    PRIMARY_TRIGGERS: List[str] = field(default_factory=lambda: [
+        "CHoCH",      # Change of Character
+        "POI",        # Point of Interest
+    ])
+    # Gatilhos de suporte: apenas aumentam confiança, nunca criam trade sozinhos
+    SUPPORT_TRIGGERS: List[str] = field(default_factory=lambda: [
+        "POLARITY_CHANGE",  # Troca de Polaridade
+        "FVG",              # Fair Value Gap
+        "IFVG",             # Inverse FVG
+    ])
+    SUPPORT_TRIGGER_BONUS: float = 0.10   # Bônus por cada gatilho de suporte (+10%)
+    
+    # ── Contextos Primários vs Suporte ─────────────────────────
+    # Contextos primários: podem criar trade sozinhos
+    PRIMARY_CONTEXTS: List[str] = field(default_factory=lambda: [
+        "advanced",        # Técnicas avançadas
+        "liquidity",       # Análise de liquidez
+    ])
+    # Contextos de suporte: apenas aumentam confiança, nunca criam trade sozinhos
+    SUPPORT_CONTEXTS: List[str] = field(default_factory=lambda: [
+        "macro_micro",     # Alinhamento macro/micro
+        "breakout",        # Rompimento de regiões
+    ])
+    SUPPORT_CONTEXT_BONUS: float = 0.08   # Bônus por cada contexto de suporte (+8%)
+
     # ── Categorias de confiança ────────────────────────────────
     # Define alavancagem baseada na confiança do bot
     CONFIDENCE_LEVERAGE_MAP: dict = field(default_factory=lambda: {

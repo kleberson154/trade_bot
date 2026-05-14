@@ -199,19 +199,31 @@ class TriggerAnalyzer:
         if not triggers_found:
             return self._empty_signal()
 
-        # Filtra pela direção mais comum
-        bull = [t for t in triggers_found if t["direction"] == "bullish"]
-        bear = [t for t in triggers_found if t["direction"] == "bearish"]
+        # Separa gatilhos primários (criam trade) vs suporte (boost confiança)
+        primary_triggers = [t for t in triggers_found if t["trigger"] in self.cfg.PRIMARY_TRIGGERS]
+        support_triggers = [t for t in triggers_found if t["trigger"] in self.cfg.SUPPORT_TRIGGERS]
 
-        # Mínimo 1 gatilho (foi: 2)
-        if len(bull) >= self.MIN_TRIGGERS:
-            chosen_triggers = bull
+        # Filtra pela direção mais comum (somente primários para decisão)
+        bull_primary = [t for t in primary_triggers if t["direction"] == "bullish"]
+        bear_primary = [t for t in primary_triggers if t["direction"] == "bearish"]
+
+        # CRÍTICO: Rejeita se houver apenas suportes (sem gatilhos primários)
+        if not bull_primary and not bear_primary:
+            logger.debug(f"Sinal rejeitado: apenas gatilhos de suporte encontrados (sem gatilhos primários)")
+            return self._empty_signal()
+
+        # Seleciona direção baseada em gatilhos primários
+        if len(bull_primary) >= self.MIN_TRIGGERS:
+            chosen_primary = bull_primary
             trade_direction = "Buy"
-        elif len(bear) >= self.MIN_TRIGGERS:
-            chosen_triggers = bear
+        elif len(bear_primary) >= self.MIN_TRIGGERS:
+            chosen_primary = bear_primary
             trade_direction = "Sell"
         else:
             return self._empty_signal()
+
+        # Suportes alinhados à direção escolhida (para boost)
+        aligned_support = [t for t in support_triggers if t["direction"] == trade_direction]
 
         # Volume confirma
         vol_data = analyze_volume(df)
@@ -222,12 +234,16 @@ class TriggerAnalyzer:
         vol_bonus = 0.08 if vol_confirms else 0.0
         vol_spike_bonus = 0.05 if vol_data["is_spike"] else 0.0
 
-        # Score médio dos gatilhos (já com penalidade de idade aplicada)
-        avg_strength = sum(t["strength"] for t in chosen_triggers) / len(chosen_triggers)
-        trigger_score = min(avg_strength + vol_bonus + vol_spike_bonus, 1.0)
+        # Score médio dos gatilhos primários
+        avg_strength = sum(t["strength"] for t in chosen_primary) / len(chosen_primary)
+        
+        # Bônus de suporte: cada gatilho de suporte alinhado adiciona valor
+        support_bonus = len(aligned_support) * self.cfg.SUPPORT_TRIGGER_BONUS
+        
+        trigger_score = min(avg_strength + vol_bonus + vol_spike_bonus + support_bonus, 1.0)
 
-        # Log da recenticidade dos gatilhos selecionados
-        avg_age = sum(t["age_candles"] for t in chosen_triggers) / len(chosen_triggers)
+        # Log da recenticidade dos gatilhos primários (usados para decisão)
+        avg_age = sum(t["age_candles"] for t in chosen_primary) / len(chosen_primary)
         logger.info(f"✓ Gatilhos selecionados: {len(chosen_triggers)} | Idade média: {avg_age:.1f} candles | Score: {trigger_score:.3f}")
 
         # ── Cálculo de Entrada, SL e TP ───────────────────────────────────────
@@ -245,14 +261,15 @@ class TriggerAnalyzer:
         return {
             "valid": True,
             "direction": trade_direction,
-            "triggers": [t["trigger"] for t in chosen_triggers],
-            "trigger_count": len(chosen_triggers),
+            "triggers": [t["trigger"] for t in chosen_primary],  # Apenas primários na saída
+            "support_triggers": [t["trigger"] for t in aligned_support],  # Log de suportes
+            "trigger_count": len(chosen_primary),
             "trigger_score": round(trigger_score, 3),
             "entry": entry,
             "stop_loss": sl,
             "take_profit": tp,
             "volume_confirms": vol_confirms,
-            "descriptions": [f"{t['trigger']}@{t['price']:.4f}" for t in chosen_triggers],
+            "descriptions": [f"{t['trigger']}@{t['price']:.4f}" for t in chosen_primary],
         }
 
     def _calculate_levels(
