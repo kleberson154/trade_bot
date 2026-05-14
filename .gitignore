@@ -3,3 +3,15 @@
 
 /image
 /image2
+
+/__pycache__
+*.pyc
+/venv
+/logs
+*.log
+/coverage
+/instance
+/tests/__pycache__
+/tests/test_*.pyc
+/tests/test_*.log
+/tests/test_coverage
