@@ -272,9 +272,9 @@ class TriggerAnalyzer:
             sl = min(zone_bottoms) - atr * 0.5
             sl = round(sl, 4)
 
-            # TP com RR mínimo 1:3 + extensão Fibonacci
+            # TP com RR fixo 1:3
             risk = entry - sl
-            tp = entry + risk * 3.5  # 1:3.5 RR para margem
+            tp = entry + risk * 3.0  # 1:3 RR fixo
             tp = round(tp, 4)
 
         else:  # Sell
@@ -283,7 +283,7 @@ class TriggerAnalyzer:
             sl = round(sl, 4)
 
             risk = sl - entry
-            tp = entry - risk * 3.5
+            tp = entry - risk * 3.0  # 1:3 RR fixo
             tp = round(tp, 4)
 
         # Validação básica
