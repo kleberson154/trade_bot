@@ -527,11 +527,33 @@ class TradingBot:
         if not open_trades:
             return
 
-        exchange_positions = {p["symbol"]: p for p in self.exchange.get_positions()}
+        # Agrupa posições da exchange por símbolo (pode haver múltiplas posições/ordens por símbolo)
+        exchange_positions: dict[str, list] = {}
+        for p in self.exchange.get_positions():
+            sym = p.get("symbol")
+            exchange_positions.setdefault(sym, []).append(p)
 
         for trade in open_trades:
-            # Posição não existe mais na exchange → foi fechada (SL ou TP)
-            if trade.symbol not in exchange_positions:
+            positions = exchange_positions.get(trade.symbol, [])
+
+            # Se trade tem order_id registrado, checar especificamente por essa ordem
+            matched = False
+            if trade.order_id:
+                for p in positions:
+                    # possíveis chaves que contenham o id da ordem
+                    for key in ("orderId", "order_id", "orderID", "id"):
+                        if p.get(key) and str(p.get(key)) == str(trade.order_id):
+                            matched = True
+                            break
+                    if matched:
+                        break
+
+            # Se não houver order_id ou não foi possível achar por id, considerar a posição existente se houver qualquer posição aberta no símbolo
+            if not trade.order_id and positions:
+                matched = True
+
+            # Se não encontrou posição correspondente na exchange → foi fechada (SL ou TP)
+            if not matched:
                 await self._handle_closed_position(trade)
 
     async def _handle_closed_position(self, trade):
