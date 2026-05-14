@@ -43,6 +43,14 @@ class TradingBot:
             chat_id=config.TELEGRAM_CHAT_ID,
         )
 
+        # Reconciliação inicial: importa posições abertas da exchange para o estado local
+        try:
+            positions = self.exchange.get_positions()
+            if positions:
+                self.state.import_positions(positions)
+        except Exception as e:
+            logger.debug(f"Falha na reconciliação inicial de posições: {e}")
+
         self._last_status_time: Optional[datetime] = None
         self._daily_reset_done: bool = False
 

@@ -182,3 +182,72 @@ class TradeStateManager:
             if t.status != "open" and (t.closed_at or "")[:10] == today
         ]
         return round(sum(daily), 4)
+
+    # ── Importar posições da exchange ───────────────────────────────────────
+    def import_positions(self, positions: List[Dict]):
+        """Importa posições abertas da exchange para o estado local.
+
+        Para cada posição não representada no estado, cria um registro "open"
+        com campos mínimos para rastreamento (order_id, symbol, qty, entry_price).
+        """
+        added = 0
+        for p in positions:
+            # tenta extrair um order id
+            order_id = None
+            for key in ("orderId", "order_id", "orderID", "id"):
+                if key in p and p.get(key):
+                    order_id = str(p.get(key))
+                    break
+
+            # já existe trade com o mesmo order_id?
+            exists = False
+            if order_id:
+                for t in self._trades.values():
+                    if t.order_id and str(t.order_id) == order_id and t.status == "open":
+                        exists = True
+                        break
+
+            # fallback: existe trade aberto para mesmo símbolo e tamanho aproximado?
+            if not exists:
+                size = float(p.get("size", 0))
+                for t in self.get_open_trades():
+                    if t.symbol == p.get("symbol") and abs(t.qty - size) < 1e-6:
+                        exists = True
+                        break
+
+            if exists:
+                continue
+
+            # cria trade mínimo para rastrear
+            try:
+                side = p.get("side", "Buy")
+                symbol = p.get("symbol")
+                entry_price = float(p.get("avgPrice", 0)) or float(p.get("entryPrice", 0)) or 0.0
+                stop_loss = float(p.get("stopLoss", 0)) if p.get("stopLoss") else 0.0
+                take_profit = float(p.get("takeProfit", 0)) if p.get("takeProfit") else 0.0
+                qty = float(p.get("size", 0))
+                leverage = int(p.get("leverage", 1)) if p.get("leverage") else 1
+
+                # registra com campos mínimos
+                self.open_trade(
+                    symbol=symbol,
+                    side=side,
+                    entry_price=entry_price,
+                    stop_loss=stop_loss,
+                    take_profit=take_profit,
+                    qty=qty,
+                    leverage=leverage,
+                    risk_usdt=0.0,
+                    rr_ratio=0.0,
+                    confidence=0.0,
+                    triggers=[],
+                    contexts=[],
+                    ai_reasoning="imported",
+                    order_id=order_id,
+                )
+                added += 1
+            except Exception as e:
+                logger.debug(f"Falha ao importar posição {p.get('symbol')}: {e}")
+
+        if added:
+            logger.info(f"Importadas {added} posições da exchange para o estado local")
