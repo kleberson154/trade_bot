@@ -4,6 +4,7 @@ Conector com a API da Bybit (pybit v5)
 
 import asyncio
 from typing import Optional, Dict, List, Any, Tuple
+from decimal import Decimal, ROUND_HALF_UP
 import pandas as pd
 from pybit.unified_trading import HTTP
 from utils.logger import setup_logger
@@ -100,23 +101,42 @@ class BybitClient:
         """Retorna saldo da conta (USDT)."""
         try:
             resp = self.session.get_wallet_balance(accountType="UNIFIED")
-            coins = resp["result"]["list"][0]["coin"]
-            for c in coins:
-                if c["coin"] == "USDT":
-                    # Helper para converter com segurança (trata strings vazias)
-                    def safe_float(val, default=0.0):
-                        if not val or val == "":
-                            return default
-                        try:
-                            return float(val)
-                        except (ValueError, TypeError):
-                            return default
-                    
-                    return {
-                        "equity": safe_float(c.get("equity", 0)),
-                        "available": safe_float(c.get("availableToWithdraw", 0)),
-                        "unrealised_pnl": safe_float(c.get("unrealisedPnl", 0)),
-                    }
+            account_list = resp["result"]["list"]
+            
+            # Processa conta UNIFIED
+            for account in account_list:
+                if account.get("accountType") == "UNIFIED":
+                    coins = account["coin"]
+                    for c in coins:
+                        if c["coin"] == "USDT":
+                            # Helper para converter com segurança
+                            def safe_float(val, default=0.0):
+                                if not val or val == "":
+                                    return default
+                                try:
+                                    return float(val)
+                                except (ValueError, TypeError):
+                                    return default
+                            
+                            equity = safe_float(c.get("equity", 0))
+                            total_position_im = safe_float(c.get("totalPositionIM", 0))
+                            unrealised_pnl = safe_float(c.get("unrealisedPnl", 0))
+                            
+                            # Saldo disponível = Equity - Initial Margin comprometido nas posições
+                            # Esta é a margem que pode ser usada para novas posições
+                            available = max(0, equity - total_position_im)
+                            
+                            logger.debug(
+                                f"Wallet: equity={equity:.2f}, totalPositionIM={total_position_im:.2f}, "
+                                f"available={available:.2f}"
+                            )
+                            
+                            return {
+                                "equity": equity,
+                                "available": available,
+                                "unrealised_pnl": unrealised_pnl,
+                            }
+            
             return {"equity": 0, "available": 0, "unrealised_pnl": 0}
         except Exception as e:
             logger.error(f"Erro get_wallet_balance: {e}")
@@ -125,27 +145,11 @@ class BybitClient:
     def get_available_margin(self) -> float:
         """Retorna margem disponível (USDT) para novas posições."""
         try:
-            resp = self.session.get_account_info()
-            # Na Bybit, a margem disponível vem em account info
-            # Procuramos por "availableToBorrow" ou "availableMargin"
-            if "result" in resp and "account" in resp["result"]:
-                account = resp["result"]["account"]
-                # Tenta múltiplas chaves que podem conter a margin disponível
-                margin = float(account.get("availableToBorrow", 0)) or \
-                        float(account.get("marginBalance", 0)) or \
-                        float(account.get("availableMargin", 0)) or \
-                        float(account.get("availableBalance", 0)) or 0
-                logger.debug(f"Margem disponível: {margin:.2f} USDT")
-                return margin
-            
-            # Fallback: usar available do wallet balance
             wallet = self.get_wallet_balance()
-            logger.debug(f"Margin fallback (using wallet available): {wallet['available']:.2f} USDT")
             return wallet["available"]
         except Exception as e:
             logger.error(f"Erro get_available_margin: {e}")
-            wallet = self.get_wallet_balance()
-            return wallet["available"]
+            return 0.0
 
     def get_positions(self, symbol: Optional[str] = None) -> List[Dict]:
         """Retorna posições abertas."""
@@ -217,10 +221,16 @@ class BybitClient:
                 adjustments.append(f"qty>max({max_qty})")
                 qty_adjusted = max_qty
             
-            # Arredonda para qtyStep (precisão permitida)
+            # Arredonda para qtyStep com precisão Decimal (evita floating point errors)
             if qty_step > 0:
                 qty_before = qty_adjusted
-                qty_adjusted = round(qty_adjusted / qty_step) * qty_step
+                # Usa Decimal para aritmética exata
+                qty_decimal = Decimal(str(qty_adjusted))
+                step_decimal = Decimal(str(qty_step))
+                # Divide, arredonda e multiplica de volta
+                qty_adjusted = float(
+                    (qty_decimal / step_decimal).quantize(Decimal('1'), rounding=ROUND_HALF_UP) * step_decimal
+                )
                 if qty_before != qty_adjusted:
                     adjustments.append(f"step({qty_step})")
             
