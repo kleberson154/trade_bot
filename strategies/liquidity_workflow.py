@@ -1,0 +1,488 @@
+"""
+Fluxo de Trabalho de Liquidez - 5 Passos
+Baseado no Manual de Liquidez: Como Pensar e Operar Como o Dinheiro Inteligente
+
+Passos:
+1. Identificar Liquidez: topos/fundos iguais, consolidações
+2. Esperar Sweep: captura de stops (FVG ou análise de POI)
+3. Confirmar CHoCH/BOS: mudança de estrutura
+4. Confirmar Fluxo: volume alinhado
+5. Entrar no Pullback: Order Block ou FVG (NUNCA no impulso!)
+"""
+
+import pandas as pd
+import numpy as np
+from dataclasses import dataclass
+from typing import Dict, Optional, Tuple, List
+
+
+@dataclass
+class LiquidityState:
+    """Estado da sequência de liquidez"""
+    step: int  # 0-5 (0=esperando liquidez, 1-5 = etapas do fluxo)
+    liquidity_level: float = None  # Nível onde liquidez foi encontrada
+    has_equal_highs: bool = False  # Topos iguais detectados
+    has_equal_lows: bool = False  # Fundos iguais detectados
+    has_consolidation: bool = False  # Consolidação detectada
+    sweep_confirmed: bool = False  # Sweep foi realizado
+    structure_change_confirmed: bool = False  # CHoCH/BOS confirmado
+    volume_confirmed: bool = False  # Volume alinhado
+    pullback_detected: bool = False  # Pullback detectado (pronto para entrada)
+    entry_ready: bool = False  # Pronto para executar trade
+
+
+class LiquidityWorkflow:
+    """Valida o fluxo de trabalho completo de 5 passos"""
+    
+    def __init__(self):
+        self.state = LiquidityState(step=0)
+        self.lookback = 50
+        
+    def reset_workflow(self):
+        """Reseta o workflow após conclusão de trade"""
+        self.state = LiquidityState(step=0)
+    
+    def step_1_identify_liquidity(self, df: pd.DataFrame, tolerance_pct: float = 0.5) -> Dict:
+        """
+        PASSO 1: Identificar liquidez óbvia
+        - Topos iguais (Equal Highs)
+        - Fundos iguais (Equal Lows)
+        - Consolidações (movimentação lateral)
+        
+        Args:
+            df: DataFrame com OHLCV
+            tolerance_pct: Tolerância em % para considerar "igual"
+        
+        Returns:
+            Dict com análise de liquidez
+        """
+        result = {
+            'liquidity_found': False,
+            'equal_highs': [],
+            'equal_lows': [],
+            'consolidation': None,
+            'level': None,
+            'type': None,
+        }
+        
+        if len(df) < self.lookback:
+            return result
+        
+        recent = df.iloc[-self.lookback:]
+        highs = recent['high'].values
+        lows = recent['low'].values
+        closes = recent['close'].values
+        
+        # Detectar topos iguais (Equal Highs)
+        tolerance = np.mean(highs) * (tolerance_pct / 100)
+        for i in range(len(highs) - 2):
+            for j in range(i + 2, len(highs)):
+                if abs(highs[i] - highs[j]) <= tolerance:
+                    result['equal_highs'].append((i, highs[i], j, highs[j]))
+        
+        # Detectar fundos iguais (Equal Lows)
+        for i in range(len(lows) - 2):
+            for j in range(i + 2, len(lows)):
+                if abs(lows[i] - lows[j]) <= tolerance:
+                    result['equal_lows'].append((i, lows[i], j, lows[j]))
+        
+        # Detectar consolidações (range trading)
+        high_range = np.max(recent['high'].iloc[-20:]) - np.min(recent['low'].iloc[-20:])
+        recent_range = np.max(recent['high'].iloc[-5:]) - np.min(recent['low'].iloc[-5:])
+        
+        if recent_range < high_range * 0.3:  # Consolidação = 30% do range anterior
+            result['consolidation'] = {
+                'high': np.max(recent['high'].iloc[-5:]),
+                'low': np.min(recent['low'].iloc[-5:]),
+                'range': recent_range,
+            }
+        
+        # Determinar nivel de liquidez
+        if result['equal_highs']:
+            result['level'] = result['equal_highs'][-1][1]  # Último topo igual
+            result['type'] = 'SUPPLY'
+            result['liquidity_found'] = True
+        elif result['equal_lows']:
+            result['level'] = result['equal_lows'][-1][1]  # Último fundo igual
+            result['type'] = 'DEMAND'
+            result['liquidity_found'] = True
+        elif result['consolidation']:
+            result['level'] = (result['consolidation']['high'] + result['consolidation']['low']) / 2
+            result['type'] = 'CONSOLIDATION'
+            result['liquidity_found'] = True
+        
+        if result['liquidity_found']:
+            self.state.step = 1
+            self.state.liquidity_level = result['level']
+            self.state.has_equal_highs = len(result['equal_highs']) > 0
+            self.state.has_equal_lows = len(result['equal_lows']) > 0
+            self.state.has_consolidation = result['consolidation'] is not None
+        
+        return result
+    
+    def step_2_wait_for_sweep(self, df: pd.DataFrame, liquidity_level: float, direction: str) -> Dict:
+        """
+        PASSO 2: Esperar pelo sweep (captura de stops)
+        - O mercado captura liquidez (stops)
+        - Cria um FVG ou Order Block
+        - Spike rápido penetrando a região de liquidez
+        
+        Args:
+            df: DataFrame com OHLCV
+            liquidity_level: Nível de liquidez identificado
+            direction: 'up' (bullish) ou 'down' (bearish)
+        
+        Returns:
+            Dict com análise do sweep
+        """
+        result = {
+            'sweep_detected': False,
+            'sweep_type': None,  # 'fvg' ou 'order_block'
+            'sweep_level': None,
+            'penetration_depth': None,
+        }
+        
+        if len(df) < 5:
+            return result
+        
+        recent = df.iloc[-5:]
+        
+        if direction == 'up':
+            # Esperamos uma penetração rápida da liquidez anterior
+            # E depois reversão = FVG
+            min_low = np.min(recent['low'])
+            if min_low < liquidity_level:
+                # Penetrou a liquidez (capturou stops)
+                result['sweep_detected'] = True
+                result['penetration_depth'] = abs(min_low - liquidity_level)
+                result['sweep_level'] = min_low
+                result['sweep_type'] = 'order_block'  # Será o suporte para entrada
+        
+        elif direction == 'down':
+            # Esperamos uma penetração rápida da liquidez anterior
+            # E depois reversão = FVG
+            max_high = np.max(recent['high'])
+            if max_high > liquidity_level:
+                # Penetrou a liquidez (capturou stops)
+                result['sweep_detected'] = True
+                result['penetration_depth'] = abs(max_high - liquidity_level)
+                result['sweep_level'] = max_high
+                result['sweep_type'] = 'order_block'  # Será a resistência para entrada
+        
+        if result['sweep_detected']:
+            self.state.step = 2
+            self.state.sweep_confirmed = True
+        
+        return result
+    
+    def step_3_confirm_structure_change(self, df: pd.DataFrame, direction: str) -> Dict:
+        """
+        PASSO 3: Confirmar CHoCH ou BOS (mudança de estrutura)
+        - CHoCH = Change of Character (mudança de caráter)
+        - BOS = Break of Structure (rompimento de estrutura)
+        
+        Args:
+            df: DataFrame com OHLCV
+            direction: 'up' (bullish) ou 'down' (bearish)
+        
+        Returns:
+            Dict com análise de estrutura
+        """
+        result = {
+            'structure_change': False,
+            'type': None,  # 'choch' ou 'bos'
+            'confirmation_candle': None,
+        }
+        
+        if len(df) < 20:
+            return result
+        
+        recent = df.iloc[-20:]
+        
+        if direction == 'up':
+            # CHoCH Bullish: Última vela fecha acima do máximo dos últimos candles
+            last_candle = df.iloc[-1]
+            prev_high = np.max(df.iloc[-21:-1]['high'])
+            
+            if last_candle['close'] > prev_high and last_candle['high'] > prev_high:
+                result['structure_change'] = True
+                result['type'] = 'choch'
+                result['confirmation_candle'] = {
+                    'open': last_candle['open'],
+                    'close': last_candle['close'],
+                    'high': last_candle['high'],
+                    'low': last_candle['low'],
+                }
+        
+        elif direction == 'down':
+            # CHoCH Bearish: Última vela fecha abaixo do mínimo dos últimos candles
+            last_candle = df.iloc[-1]
+            prev_low = np.min(df.iloc[-21:-1]['low'])
+            
+            if last_candle['close'] < prev_low and last_candle['low'] < prev_low:
+                result['structure_change'] = True
+                result['type'] = 'choch'
+                result['confirmation_candle'] = {
+                    'open': last_candle['open'],
+                    'close': last_candle['close'],
+                    'high': last_candle['high'],
+                    'low': last_candle['low'],
+                }
+        
+        if result['structure_change']:
+            self.state.step = 3
+            self.state.structure_change_confirmed = True
+        
+        return result
+    
+    def step_4_confirm_flow(self, df: pd.DataFrame, direction: str, volume_sma_period: int = 20) -> Dict:
+        """
+        PASSO 4: Confirmar fluxo (volume alinhado)
+        - Volume na direção do movimento
+        - Impulso forte sem hesitação
+        - Volume > média móvel de volume
+        
+        Args:
+            df: DataFrame com OHLCV
+            direction: 'up' (bullish) ou 'down' (bearish)
+            volume_sma_period: Período para SMA de volume
+        
+        Returns:
+            Dict com análise de fluxo
+        """
+        result = {
+            'flow_confirmed': False,
+            'volume_ratio': None,
+            'avg_volume': None,
+            'recent_volume': None,
+            'volume_strength': None,
+        }
+        
+        if len(df) < volume_sma_period + 5:
+            return result
+        
+        if 'volume' not in df.columns:
+            # Se não houver volume, considerar confirmado
+            result['flow_confirmed'] = True
+            result['volume_strength'] = 'unknown'
+            return result
+        
+        recent = df.iloc[-5:]
+        avg_vol = df.iloc[-volume_sma_period:-5]['volume'].mean()
+        recent_vol = recent['volume'].mean()
+        
+        result['avg_volume'] = avg_vol
+        result['recent_volume'] = recent_vol
+        result['volume_ratio'] = recent_vol / avg_vol if avg_vol > 0 else 1.0
+        
+        if direction == 'up':
+            # Volume deve estar crescendo + preço subindo
+            has_up_movement = recent.iloc[-1]['close'] > recent.iloc[0]['open']
+            has_volume = result['volume_ratio'] > 1.0  # Acima da média
+            
+            if has_up_movement and has_volume:
+                result['flow_confirmed'] = True
+                result['volume_strength'] = 'strong'
+            elif has_up_movement:
+                result['flow_confirmed'] = True
+                result['volume_strength'] = 'moderate'
+        
+        elif direction == 'down':
+            # Volume deve estar crescendo + preço caindo
+            has_down_movement = recent.iloc[-1]['close'] < recent.iloc[0]['open']
+            has_volume = result['volume_ratio'] > 1.0  # Acima da média
+            
+            if has_down_movement and has_volume:
+                result['flow_confirmed'] = True
+                result['volume_strength'] = 'strong'
+            elif has_down_movement:
+                result['flow_confirmed'] = True
+                result['volume_strength'] = 'moderate'
+        
+        if result['flow_confirmed']:
+            self.state.step = 4
+            self.state.volume_confirmed = True
+        
+        return result
+    
+    def step_5_entry_pullback(self, df: pd.DataFrame, direction: str, sweep_level: float) -> Dict:
+        """
+        PASSO 5: Entrar no pullback (Order Block ou FVG)
+        - NUNCA entrar no impulso!
+        - Esperar reação/pullback
+        - Entrar no suporte (OB) ou nos níveis de suporte/resistência
+        
+        Args:
+            df: DataFrame com OHLCV
+            direction: 'up' (bullish) ou 'down' (bearish)
+            sweep_level: Nível do sweep anterior
+        
+        Returns:
+            Dict com análise de entrada
+        """
+        result = {
+            'entry_ready': False,
+            'entry_reason': None,
+            'entry_level': None,
+            'pullback_depth': None,
+            'is_in_impulse': False,
+        }
+        
+        if len(df) < 3:
+            return result
+        
+        last_close = df.iloc[-1]['close']
+        
+        if direction == 'up':
+            # Bullish: Procuramos pullback (reação para baixo)
+            # Entrada será no suporte (Order Block)
+            
+            # Verificar se estamos em impulso (cada candle mais alto = ainda em impulso)
+            is_impulse = (df.iloc[-1]['high'] > df.iloc[-2]['high'] and 
+                         df.iloc[-1]['close'] > df.iloc[-2]['close'])
+            
+            if is_impulse:
+                result['is_in_impulse'] = True
+                result['entry_reason'] = 'Aguardando pullback (ainda em impulso)'
+                return result
+            
+            # Detectar pullback (lower low ou close abaixo do anterior)
+            is_pullback = (df.iloc[-1]['low'] < df.iloc[-2]['low'] or 
+                          df.iloc[-1]['close'] < df.iloc[-2]['close'])
+            
+            if is_pullback:
+                pullback_level = df.iloc[-1]['low']
+                pullback_depth = abs(df.iloc[-2]['high'] - pullback_level)
+                
+                result['entry_ready'] = True
+                result['entry_reason'] = 'Pullback confirmado'
+                result['entry_level'] = pullback_level
+                result['pullback_depth'] = pullback_depth
+        
+        elif direction == 'down':
+            # Bearish: Procuramos pullback (reação para cima)
+            # Entrada será na resistência (Order Block)
+            
+            # Verificar se estamos em impulso (cada candle mais baixo = ainda em impulso)
+            is_impulse = (df.iloc[-1]['low'] < df.iloc[-2]['low'] and 
+                         df.iloc[-1]['close'] < df.iloc[-2]['close'])
+            
+            if is_impulse:
+                result['is_in_impulse'] = True
+                result['entry_reason'] = 'Aguardando pullback (ainda em impulso)'
+                return result
+            
+            # Detectar pullback (higher high ou close acima do anterior)
+            is_pullback = (df.iloc[-1]['high'] > df.iloc[-2]['high'] or 
+                          df.iloc[-1]['close'] > df.iloc[-2]['close'])
+            
+            if is_pullback:
+                pullback_level = df.iloc[-1]['high']
+                pullback_depth = abs(pullback_level - df.iloc[-2]['low'])
+                
+                result['entry_ready'] = True
+                result['entry_reason'] = 'Pullback confirmado'
+                result['entry_level'] = pullback_level
+                result['pullback_depth'] = pullback_depth
+        
+        if result['entry_ready']:
+            self.state.step = 5
+            self.state.pullback_detected = True
+            self.state.entry_ready = True
+        
+        return result
+    
+    def validate_complete_workflow(self, df: pd.DataFrame, 
+                                  direction: str = 'up',
+                                  liquidity_level: Optional[float] = None,
+                                  sweep_level: Optional[float] = None) -> Dict:
+        """
+        Valida o fluxo completo de 5 passos
+        Retorna True apenas se todos os 5 passos foram validados
+        
+        Args:
+            df: DataFrame com OHLCV
+            direction: 'up' ou 'down'
+            liquidity_level: Nível de liquidez (optional)
+            sweep_level: Nível do sweep (optional)
+        
+        Returns:
+            Dict com resultado da validação completa
+        """
+        
+        # Passo 1: Identificar liquidez
+        step1 = self.step_1_identify_liquidity(df)
+        if not step1['liquidity_found']:
+            return {
+                'workflow_valid': False,
+                'current_step': 0,
+                'reason': 'Liquidez não identificada',
+                'details': step1,
+            }
+        
+        # Usar nível fornecido ou do step 1
+        liq_level = liquidity_level or step1['level']
+        
+        # Passo 2: Esperar sweep
+        step2 = self.step_2_wait_for_sweep(df, liq_level, direction)
+        if not step2['sweep_detected']:
+            return {
+                'workflow_valid': False,
+                'current_step': 1,
+                'reason': 'Sweep não detectado',
+                'details': step1,
+            }
+        
+        # Usar nível do sweep
+        sweep_lv = sweep_level or step2['sweep_level']
+        
+        # Passo 3: Confirmar mudança de estrutura
+        step3 = self.step_3_confirm_structure_change(df, direction)
+        if not step3['structure_change']:
+            return {
+                'workflow_valid': False,
+                'current_step': 2,
+                'reason': 'Mudança de estrutura (CHoCH/BOS) não confirmada',
+                'details': step1,
+            }
+        
+        # Passo 4: Confirmar fluxo
+        step4 = self.step_4_confirm_flow(df, direction)
+        if not step4['flow_confirmed']:
+            return {
+                'workflow_valid': False,
+                'current_step': 3,
+                'reason': 'Fluxo não confirmado (volume fraco)',
+                'details': step1,
+            }
+        
+        # Passo 5: Entrada no pullback
+        step5 = self.step_5_entry_pullback(df, direction, sweep_lv)
+        if not step5['entry_ready']:
+            return {
+                'workflow_valid': False,
+                'current_step': 4,
+                'reason': step5['entry_reason'],
+                'details': step1,
+            }
+        
+        # Todos os 5 passos validados!
+        return {
+            'workflow_valid': True,
+            'current_step': 5,
+            'reason': 'Fluxo de liquidez completo validado!',
+            'step_1_liquidity': step1,
+            'step_2_sweep': step2,
+            'step_3_structure': step3,
+            'step_4_flow': step4,
+            'step_5_entry': step5,
+            'entry_level': step5['entry_level'],
+            'entry_ready': True,
+        }
+
+
+if __name__ == '__main__':
+    # Teste básico
+    workflow = LiquidityWorkflow()
+    print("✓ LiquidityWorkflow iniciado")
+    print(f"  Estado inicial: Passo {workflow.state.step}")

@@ -10,6 +10,7 @@ from utils.config import Config
 from utils.logger import setup_logger
 from data.bybit_client import BybitClient
 from strategies.indicators import analyze_volume, add_atr, find_swing_highs_lows
+from strategies.liquidity_workflow import LiquidityWorkflow
 from contexts.context_analyzer import ContextAnalyzer
 from triggers.trigger_analyzer import TriggerAnalyzer
 from strategies.ai_analyzer import AIAnalyzer
@@ -37,6 +38,7 @@ class TradingBot:
         self.trigger_analyzer = TriggerAnalyzer(config=config)
         self.ai_analyzer = AIAnalyzer(groq_key=config.GROQ_API_KEY)
         self.risk_manager = RiskManager(config)
+        self.liquidity_workflow = LiquidityWorkflow()  # Fluxo de 5 passos de liquidez
         self.state = TradeStateManager()
         self.telegram = TelegramNotifier(
             token=config.TELEGRAM_BOT_TOKEN,
@@ -261,6 +263,25 @@ class TradingBot:
 
         if context_result["active_count"] == 0:
             return
+        
+        # 2.5 NOVO: Validar Fluxo de Trabalho de Liquidez (5 Passos)
+        # Este é o filtro CRÍTICO: o bot SÓ entra em trades que seguem o fluxo correto
+        liquidity_validation = self.liquidity_workflow.validate_complete_workflow(
+            df=df_primary,
+            direction="up" if context_result["direction"] == "buy" else "down"
+        )
+        
+        if not liquidity_validation["workflow_valid"]:
+            current_step = liquidity_validation["current_step"]
+            reason = liquidity_validation["reason"]
+            logger.debug(f"{symbol} | Fluxo de Liquidez: Etapa {current_step} incompleta - {reason}")
+            return
+        
+        logger.info(
+            f"{symbol} | ✓ Fluxo de Liquidez Validado! "
+            f"(Liq={liquidity_validation['step_1_liquidity']['type']}, "
+            f"Sweep={liquidity_validation['step_2_sweep']['sweep_type']})"
+        )
         
         # NOVO: Análises Avançadas (10 pontos)
         advanced_analysis = context_result.get("contexts", {}).get("advanced", {})
