@@ -3,9 +3,9 @@ Sistema de logging do bot
 """
 
 import logging
+import os
 import sys
 from pathlib import Path
-from logging.handlers import RotatingFileHandler
 
 
 def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
@@ -29,13 +29,19 @@ def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
     ch.setFormatter(fmt)
     logger.addHandler(ch)
 
-    # Arquivo com rotação (10 MB, 5 backups)
-    fh = RotatingFileHandler(
-        log_dir / "bot.log",
-        maxBytes=10 * 1024 * 1024,
-        backupCount=5,
-        encoding="utf-8",
-    )
+    # Em Windows/OneDrive, rotação do arquivo costuma falhar por lock externo.
+    # Para evitar spam de traceback, usamos append simples no Windows.
+    if os.name == "nt":
+        fh = logging.FileHandler(log_dir / "bot.log", encoding="utf-8")
+    else:
+        from logging.handlers import RotatingFileHandler
+
+        fh = RotatingFileHandler(
+            log_dir / "bot.log",
+            maxBytes=10 * 1024 * 1024,
+            backupCount=5,
+            encoding="utf-8",
+        )
     fh.setFormatter(fmt)
     logger.addHandler(fh)
 

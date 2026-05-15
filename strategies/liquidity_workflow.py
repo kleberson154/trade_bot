@@ -156,32 +156,33 @@ class LiquidityWorkflow:
             'penetration_depth': None,
         }
         
-        if len(df) < 5:
+        sweep_window = 8
+        if len(df) < sweep_window:
             return result
-        
-        recent = df.iloc[-5:]
+
+        recent = df.iloc[-sweep_window:]
         
         if direction == 'up':
             # Esperamos uma penetração rápida da liquidez anterior
-            # E depois reversão = FVG
+            # Usa janela maior e tolerância pequena para aceitar variações micro
             min_low = np.min(recent['low'])
-            if min_low < liquidity_level:
-                # Penetrou a liquidez (capturou stops)
+            eps = max(1e-8, liquidity_level * 0.0005)  # 0.05% tolerance
+            if min_low < liquidity_level - eps or min_low <= liquidity_level + eps:
+                # Penetrou a liquidez (capturou stops) ou micro-penetração aceitável
                 result['sweep_detected'] = True
                 result['penetration_depth'] = abs(min_low - liquidity_level)
                 result['sweep_level'] = min_low
-                result['sweep_type'] = 'order_block'  # Será o suporte para entrada
+                result['sweep_type'] = 'order_block'
         
         elif direction == 'down':
             # Esperamos uma penetração rápida da liquidez anterior
-            # E depois reversão = FVG
             max_high = np.max(recent['high'])
-            if max_high > liquidity_level:
-                # Penetrou a liquidez (capturou stops)
+            eps = max(1e-8, liquidity_level * 0.0005)
+            if max_high > liquidity_level + eps or max_high >= liquidity_level - eps:
                 result['sweep_detected'] = True
                 result['penetration_depth'] = abs(max_high - liquidity_level)
                 result['sweep_level'] = max_high
-                result['sweep_type'] = 'order_block'  # Será a resistência para entrada
+                result['sweep_type'] = 'order_block'
         
         if result['sweep_detected']:
             self.state.step = 2
@@ -194,10 +195,13 @@ class LiquidityWorkflow:
                 result['penetration_depth'],
             )
         else:
+            # Diagnóstico: registrar extremos recentes para entender por que não houve sweep
             logger.info(
-                "Passo 2 falhou | direction=%s nivel_liquidez=%.4f",
+                "Passo 2 falhou | direction=%s nivel_liquidez=%.4f recent_min_low=%.4f recent_max_high=%.4f",
                 direction,
                 liquidity_level,
+                np.min(recent['low']),
+                np.max(recent['high']),
             )
         
         return result
@@ -291,6 +295,43 @@ class LiquidityWorkflow:
                     'high': last_candle['high'],
                     'low': last_candle['low'],
                 }
+            # Fallback permissivo BOS: aceitar 2 fechamentos consecutivos acima do prev_high
+            if not result['structure_change']:
+                # determinar prev_high de referência
+                try:
+                    if len(swings_high['highs']) >= 1:
+                        prev_high = swings_high['highs'][-1][1]
+                    else:
+                        prev_high = np.max(df.iloc[-21:-1]['high'])
+                except Exception:
+                    prev_high = np.max(df['high'].iloc[-21:-1]) if len(df) >= 22 else np.max(df['high'])
+
+                try:
+                    close1 = df.iloc[-1]['close']
+                    close2 = df.iloc[-2]['close']
+                    # dois fechamentos consecutivos acima do prev_high
+                    if close1 > prev_high and close2 > prev_high:
+                        result['structure_change'] = True
+                        result['type'] = 'bos_bullish'
+                        result['confirmation_candle'] = {
+                            'open': last_candle['open'],
+                            'close': last_candle['close'],
+                            'high': last_candle['high'],
+                            'low': last_candle['low'],
+                        }
+                    else:
+                        # aceitar single close contendo penetração significativa (>0.15%)
+                        if close1 > prev_high and (close1 - prev_high) / prev_high > 0.0015:
+                            result['structure_change'] = True
+                            result['type'] = 'bos_bullish'
+                            result['confirmation_candle'] = {
+                                'open': last_candle['open'],
+                                'close': last_candle['close'],
+                                'high': last_candle['high'],
+                                'low': last_candle['low'],
+                            }
+                except Exception:
+                    pass
         
         elif direction == 'down':
             # CHoCH Bearish: novo swing high ABAIXO do swing high anterior (estrutura de baixa confirmada)
@@ -326,6 +367,40 @@ class LiquidityWorkflow:
                     'high': last_candle['high'],
                     'low': last_candle['low'],
                 }
+            # Fallback permissivo BOS bearish: 2 fechamentos consecutivos abaixo do prev_low
+            if not result['structure_change']:
+                try:
+                    if len(swings_low['lows']) >= 1:
+                        prev_low = swings_low['lows'][-1][1]
+                    else:
+                        prev_low = np.min(df.iloc[-21:-1]['low'])
+                except Exception:
+                    prev_low = np.min(df['low'].iloc[-21:-1]) if len(df) >= 22 else np.min(df['low'])
+
+                try:
+                    close1 = df.iloc[-1]['close']
+                    close2 = df.iloc[-2]['close']
+                    if close1 < prev_low and close2 < prev_low:
+                        result['structure_change'] = True
+                        result['type'] = 'bos_bearish'
+                        result['confirmation_candle'] = {
+                            'open': last_candle['open'],
+                            'close': last_candle['close'],
+                            'high': last_candle['high'],
+                            'low': last_candle['low'],
+                        }
+                    else:
+                        if close1 < prev_low and (prev_low - close1) / prev_low > 0.0015:
+                            result['structure_change'] = True
+                            result['type'] = 'bos_bearish'
+                            result['confirmation_candle'] = {
+                                'open': last_candle['open'],
+                                'close': last_candle['close'],
+                                'high': last_candle['high'],
+                                'low': last_candle['low'],
+                            }
+                except Exception:
+                    pass
         
         if result['structure_change']:
             self.state.step = 3
@@ -337,7 +412,16 @@ class LiquidityWorkflow:
                 result['confirmation_candle'],
             )
         else:
-            logger.info("Passo 3 falhou | direction=%s sem CHoCH/BOS confirmado", direction)
+            # Diagnóstico: informar quantos swings foram detectados e último candle
+            swings_low_count = len(swings_low['lows']) if 'swings_low' in locals() else 0
+            swings_high_count = len(swings_high['highs']) if 'swings_high' in locals() else 0
+            logger.info(
+                "Passo 3 falhou | direction=%s sem CHoCH/BOS confirmado | swings_low=%d swings_high=%d last_candle=%s",
+                direction,
+                swings_low_count,
+                swings_high_count,
+                last_candle.to_dict() if 'last_candle' in locals() else {},
+            )
         
         return result
     
@@ -415,10 +499,14 @@ class LiquidityWorkflow:
                 result['volume_strength'],
             )
         else:
+            # Diagnóstico: informar média e volume recente para calibrar thresholds
             logger.info(
-                "Passo 4 falhou | direction=%s volume_ratio=%s",
+                "Passo 4 falhou | direction=%s volume_ratio=%s avg_volume=%s recent_volume=%s strength=%s",
                 direction,
                 "n/a" if result['volume_ratio'] is None else f"{result['volume_ratio']:.2f}",
+                (f"{result['avg_volume']:.2f}" if result['avg_volume'] is not None else "n/a"),
+                (f"{result['recent_volume']:.2f}" if result['recent_volume'] is not None else "n/a"),
+                result['volume_strength'],
             )
         
         return result
@@ -619,5 +707,5 @@ class LiquidityWorkflow:
 if __name__ == '__main__':
     # Teste básico
     workflow = LiquidityWorkflow()
-    print("✓ LiquidityWorkflow iniciado")
+    print("LiquidityWorkflow iniciado")
     print(f"  Estado inicial: Passo {workflow.state.step}")

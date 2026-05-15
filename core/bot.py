@@ -85,7 +85,7 @@ class TradingBot:
             trade_type = "FORTE 🔥"
             is_strong = True
         else:
-            trade_type = "BASE ✓"
+            trade_type = "BASE OK"
             is_strong = False
         
         return bonus_total, is_strong, trade_type
@@ -198,7 +198,7 @@ class TradingBot:
 
         # Conta trades abertas (para logs)
         open_trades = self.state.get_open_trades()
-        base_trades = sum(1 for t in open_trades if not hasattr(t, 'trade_strength') or t.get('trade_strength') == 'BASE ✓')
+        base_trades = sum(1 for t in open_trades if not hasattr(t, 'trade_strength') or t.get('trade_strength') == 'BASE OK')
         strong_trades = len(open_trades) - base_trades
         
         logger.debug(
@@ -278,7 +278,7 @@ class TradingBot:
             return
         
         logger.info(
-            f"{symbol} | ✓ Fluxo de Liquidez Validado! "
+            f"{symbol} | Fluxo de Liquidez Validado! "
             f"(Liq={liquidity_validation['step_1_liquidity']['type']}, "
             f"Sweep={liquidity_validation['step_2_sweep']['sweep_type']})"
         )
@@ -479,7 +479,7 @@ class TradingBot:
 
     # ── Execução de Trade ─────────────────────────────────────────────────────
 
-    async def _execute_trade(self, params, context_result, trigger_result, ai_result, trade_strength: str = "BASE ✓", advanced_analysis: dict = None, ds_validation: dict = None, ob_validation: dict = None):
+    async def _execute_trade(self, params, context_result, trigger_result, ai_result, trade_strength: str = "BASE OK", advanced_analysis: dict = None, ds_validation: dict = None, ob_validation: dict = None):
         """Executa a ordem na Bybit e registra o trade."""
         if advanced_analysis is None:
             advanced_analysis = {}
@@ -525,9 +525,9 @@ class TradingBot:
         # Validações extras (D/S e OB)
         validation_desc = ""
         if ds_validation and ds_validation.get("is_legitimate"):
-            validation_desc += f"✓ {ds_validation.get('reason', '')} | "
+            validation_desc += f"OK: {ds_validation.get('reason', '')} | "
         if ob_validation and ob_validation.get("is_legitimate"):
-            validation_desc += f"✓ OB {ob_validation.get('validity_level', '')} | "
+            validation_desc += f"OB OK: {ob_validation.get('validity_level', '')} | "
         
         await self.telegram.notify_trade_open(
             symbol=params.symbol,

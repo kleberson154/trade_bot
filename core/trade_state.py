@@ -93,6 +93,53 @@ class TradeStateManager:
         order_id: Optional[str] = None,
     ) -> Trade:
         """Registra novo trade aberto."""
+        # Se fornecido `order_id` e já existir trade com esse order_id, atualizar/retornar
+        now_iso = datetime.now().isoformat()
+        if order_id:
+            for t in self._trades.values():
+                if t.order_id and str(t.order_id) == str(order_id) and t.status == "open":
+                    # Atualiza campos relevantes e retorna o registro existente
+                    t.entry_price = entry_price
+                    t.stop_loss = stop_loss
+                    t.take_profit = take_profit
+                    t.qty = qty
+                    t.leverage = leverage
+                    t.risk_usdt = risk_usdt
+                    t.rr_ratio = rr_ratio
+                    t.confidence = confidence
+                    t.triggers = triggers
+                    t.contexts = contexts
+                    t.ai_reasoning = ai_reasoning
+                    t.opened_at = t.opened_at or now_iso
+                    self._save()
+                    logger.info(f"Trade existente atualizado (order_id): {t.id} | {symbol} {side}")
+                    return t
+
+        # Tentativa de mesclar com trade "imported" já presente: mesmo símbolo e tamanho próximo
+        for t in self.get_open_trades():
+            if t.symbol == symbol and (not t.order_id):
+                # tolerância relativa de 1% no tamanho para evitar duplicação por arredondamento
+                tol = max(1e-6, qty * 0.01)
+                if abs(t.qty - qty) <= tol:
+                    # Atualiza placeholder importado com os dados reais
+                    t.entry_price = entry_price
+                    t.stop_loss = stop_loss
+                    t.take_profit = take_profit
+                    t.qty = qty
+                    t.leverage = leverage
+                    t.risk_usdt = risk_usdt
+                    t.rr_ratio = rr_ratio
+                    t.confidence = confidence
+                    t.triggers = triggers
+                    t.contexts = contexts
+                    t.ai_reasoning = ai_reasoning
+                    t.order_id = order_id
+                    t.opened_at = t.opened_at or now_iso
+                    self._save()
+                    logger.info(f"Trade importado atualizado e mesclado: {t.id} | {symbol} {side}")
+                    return t
+
+        # Caso padrão: criar novo trade
         trade_id = str(uuid.uuid4())[:8]
         trade = Trade(
             id=trade_id,
@@ -109,7 +156,7 @@ class TradeStateManager:
             triggers=triggers,
             contexts=contexts,
             ai_reasoning=ai_reasoning,
-            opened_at=datetime.now().isoformat(),
+            opened_at=now_iso,
             order_id=order_id,
         )
         self._trades[trade_id] = trade

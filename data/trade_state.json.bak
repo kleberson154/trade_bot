@@ -1,0 +1,56 @@
+{
+  "ca9dd005": {
+    "id": "ca9dd005",
+    "symbol": "XRPUSDT",
+    "side": "Sell",
+    "entry_price": 1.4408,
+    "stop_loss": 1.4634,
+    "take_profit": 1.373,
+    "qty": 84.01107464,
+    "leverage": 6,
+    "risk_usdt": 1.9,
+    "rr_ratio": 3.0,
+    "confidence": 0.696,
+    "triggers": [
+      "CHoCH"
+    ],
+    "contexts": [
+      "advanced"
+    ],
+    "ai_reasoning": "Gatilho CHoCH",
+    "opened_at": "2026-05-15T20:12:24.289959",
+    "closed_at": null,
+    "exit_price": null,
+    "pnl": null,
+    "pnl_pct": null,
+    "status": "open",
+    "order_id": "ord-123"
+  },
+  "imp1": {
+    "id": "ca9dd005",
+    "symbol": "XRPUSDT",
+    "side": "Sell",
+    "entry_price": 1.4408,
+    "stop_loss": 1.4634,
+    "take_profit": 1.373,
+    "qty": 84.01107464,
+    "leverage": 6,
+    "risk_usdt": 1.9,
+    "rr_ratio": 3.0,
+    "confidence": 0.696,
+    "triggers": [
+      "CHoCH"
+    ],
+    "contexts": [
+      "advanced"
+    ],
+    "ai_reasoning": "Gatilho CHoCH",
+    "opened_at": "2026-05-15T20:12:24.289959",
+    "closed_at": null,
+    "exit_price": null,
+    "pnl": null,
+    "pnl_pct": null,
+    "status": "open",
+    "order_id": "ord-123"
+  }
+}
