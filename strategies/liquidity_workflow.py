@@ -18,6 +18,11 @@ from utils.logger import setup_logger
 
 
 logger = setup_logger("liquidity_workflow")
+DEFAULT_SWEEP_EPS = 0.001
+# Limiar de penetração única para aceitar BOS/CHOCH (0.001 = 0.1%)
+CHOCH_SINGLE_PENETRATION = 0.001
+# Limiar mínimo de volume_ratio para aceitar fluxo (conservador)
+VOLUME_RATIO_THRESHOLD = 0.90
 
 
 @dataclass
@@ -166,7 +171,7 @@ class LiquidityWorkflow:
             # Esperamos uma penetração rápida da liquidez anterior
             # Usa janela maior e tolerância pequena para aceitar variações micro
             min_low = np.min(recent['low'])
-            eps = max(1e-8, liquidity_level * 0.0005)  # 0.05% tolerance
+            eps = max(1e-8, liquidity_level * DEFAULT_SWEEP_EPS)  # default tolerance
             if min_low < liquidity_level - eps or min_low <= liquidity_level + eps:
                 # Penetrou a liquidez (capturou stops) ou micro-penetração aceitável
                 result['sweep_detected'] = True
@@ -321,7 +326,7 @@ class LiquidityWorkflow:
                         }
                     else:
                         # aceitar single close contendo penetração significativa (>0.15%)
-                        if close1 > prev_high and (close1 - prev_high) / prev_high > 0.0015:
+                        if close1 > prev_high and (close1 - prev_high) / prev_high > CHOCH_SINGLE_PENETRATION:
                             result['structure_change'] = True
                             result['type'] = 'bos_bullish'
                             result['confirmation_candle'] = {
@@ -390,7 +395,7 @@ class LiquidityWorkflow:
                             'low': last_candle['low'],
                         }
                     else:
-                        if close1 < prev_low and (prev_low - close1) / prev_low > 0.0015:
+                        if close1 < prev_low and (prev_low - close1) / prev_low > CHOCH_SINGLE_PENETRATION:
                             result['structure_change'] = True
                             result['type'] = 'bos_bearish'
                             result['confirmation_candle'] = {
@@ -468,7 +473,7 @@ class LiquidityWorkflow:
         if direction == 'up':
             # Volume deve estar crescendo + preço subindo
             has_up_movement = recent.iloc[-1]['close'] > recent.iloc[0]['open']
-            has_volume = result['volume_ratio'] > 1.0  # Acima da média
+            has_volume = result['volume_ratio'] >= VOLUME_RATIO_THRESHOLD  # Acima da média (conservador)
             
             if has_up_movement and has_volume:
                 result['flow_confirmed'] = True
@@ -480,7 +485,7 @@ class LiquidityWorkflow:
         elif direction == 'down':
             # Volume deve estar crescendo + preço caindo
             has_down_movement = recent.iloc[-1]['close'] < recent.iloc[0]['open']
-            has_volume = result['volume_ratio'] > 1.0  # Acima da média
+            has_volume = result['volume_ratio'] >= VOLUME_RATIO_THRESHOLD  # Acima da média (conservador)
             
             if has_down_movement and has_volume:
                 result['flow_confirmed'] = True
