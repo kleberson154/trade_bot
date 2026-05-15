@@ -65,6 +65,8 @@ class TelegramNotifier:
         contexts: list,
         ai_reasoning: str,
         trade_strength: str = "BASE ✓",
+        advanced_techniques: str = "",
+        validation_notes: str = "",
     ):
         emoji_side = "🟢📈" if side == "Buy" else "🔴📉"
         side_text = "LONG" if side == "Buy" else "SHORT"
@@ -90,6 +92,10 @@ class TelegramNotifier:
             f"🌐 Contextos: <i>{', '.join(contexts)}</i>\n"
             f"🧠 IA: <i>{ai_reasoning[:120]}...</i>\n"
         )
+        if advanced_techniques:
+            text += f"🔍 Técnicas: <i>{advanced_techniques[:180]}</i>\n"
+        if validation_notes:
+            text += f"🧪 Validações: <i>{validation_notes[:180]}</i>\n"
         await self.send(text)
 
     async def notify_trade_close(

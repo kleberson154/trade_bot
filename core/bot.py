@@ -583,22 +583,37 @@ class TradingBot:
 
             # Se não encontrou posição correspondente na exchange → foi fechada (SL ou TP)
             if not matched:
+                grace_seconds = getattr(self.cfg, "POSITION_GRACE_SECONDS", 90)
+                try:
+                    opened_at = datetime.fromisoformat(trade.opened_at)
+                    age_seconds = (datetime.now() - opened_at).total_seconds()
+                except Exception:
+                    age_seconds = None
+
+                # Evita fechar uma trade muito recente por atraso de sincronização da exchange
+                if age_seconds is not None and age_seconds < grace_seconds:
+                    logger.info(
+                        f"Trade {trade.id} ainda dentro da carência de sincronização "
+                        f"({age_seconds:.0f}s < {grace_seconds}s) | {trade.symbol}"
+                    )
+                    continue
+
                 await self._handle_closed_position(trade)
 
     async def _handle_closed_position(self, trade):
         """Trata posição fechada na exchange."""
-        # Busca PnL real da Bybit
-        closed_pnl_list = self.exchange.get_closed_pnl(symbol=trade.symbol, limit=5)
-        exit_price = trade.take_profit  # fallback
-        pnl = 0.0
-        reason = "closed_sl"
+        closed_pnl_list = self.exchange.get_closed_pnl(symbol=trade.symbol, limit=10)
+        matched_item = self._find_closed_pnl_match(trade, closed_pnl_list)
+        if not matched_item:
+            logger.warning(
+                f"Nenhum closed_pnl confiável encontrado para {trade.symbol} "
+                f"(trade_id={trade.id}, order_id={trade.order_id}); aguardando próxima leitura"
+            )
+            return
 
-        for item in closed_pnl_list:
-            if item.get("symbol") == trade.symbol:
-                pnl = float(item.get("closedPnl", 0))
-                exit_price = float(item.get("avgExitPrice", trade.take_profit))
-                reason = "closed_tp" if pnl > 0 else "closed_sl"
-                break
+        pnl = float(matched_item.get("closedPnl", 0))
+        exit_price = float(matched_item.get("avgExitPrice", trade.take_profit or trade.entry_price))
+        reason = "closed_tp" if pnl > 0 else "closed_sl"
 
         closed = self.state.close_trade(trade.id, exit_price, reason)
         if closed:
@@ -611,6 +626,63 @@ class TradingBot:
                 pnl_pct=closed.pnl_pct or 0,
                 reason="Take Profit ✅" if pnl > 0 else "Stop Loss ❌",
             )
+
+    def _find_closed_pnl_match(self, trade, closed_pnl_list):
+        """Seleciona o registro fechado correto para a trade.
+
+        Prioridade:
+        1. order_id exato da trade
+        2. mesmo símbolo, mesmo tamanho aproximado e timestamp posterior à abertura
+        """
+        if not closed_pnl_list:
+            return None
+
+        trade_order_id = str(trade.order_id) if trade.order_id else None
+        if trade_order_id:
+            for item in closed_pnl_list:
+                for key in ("orderId", "order_id", "orderID", "id"):
+                    if item.get(key) and str(item.get(key)) == trade_order_id:
+                        return item
+
+        try:
+            opened_at_epoch = datetime.fromisoformat(trade.opened_at).timestamp()
+        except Exception:
+            opened_at_epoch = None
+
+        candidates = []
+        for item in closed_pnl_list:
+            if item.get("symbol") != trade.symbol:
+                continue
+
+            try:
+                item_qty = float(item.get("closedSize") or item.get("qty") or 0)
+            except Exception:
+                item_qty = 0.0
+
+            trade_qty = float(trade.qty or 0)
+            if trade_qty and abs(item_qty - trade_qty) > max(1e-6, trade_qty * 0.05):
+                continue
+
+            item_epoch = None
+            for key in ("updatedTime", "createdTime"):
+                raw_time = item.get(key)
+                if raw_time:
+                    try:
+                        item_epoch = int(raw_time) / 1000.0
+                        break
+                    except Exception:
+                        pass
+
+            if opened_at_epoch and item_epoch and item_epoch < opened_at_epoch:
+                continue
+
+            candidates.append((item_epoch or 0.0, item))
+
+        if candidates:
+            candidates.sort(key=lambda x: x[0], reverse=True)
+            return candidates[0][1]
+
+        return None
 
     # ── Status e Utilidades ───────────────────────────────────────────────────
 
