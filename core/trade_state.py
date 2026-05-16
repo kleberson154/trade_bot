@@ -7,7 +7,7 @@ Gerenciador de Estado dos Trades
 
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 from dataclasses import dataclass, field, asdict
@@ -229,6 +229,18 @@ class TradeStateManager:
             if t.status != "open" and (t.closed_at or "")[:10] == today
         ]
         return round(sum(daily), 4)
+
+    def get_pnl_last_n_days(self, days: int = 7) -> float:
+        """PnL dos últimos `days` dias (inclui hoje)."""
+        if days <= 0:
+            return 0.0
+        cutoff_date = (datetime.now().date() - timedelta(days=days - 1)).isoformat()
+        values = [
+            t.pnl or 0
+            for t in self._trades.values()
+            if t.status != "open" and (t.closed_at or "")[:10] >= cutoff_date
+        ]
+        return round(sum(values), 4)
 
     # ── Importar posições da exchange ───────────────────────────────────────
     def import_positions(self, positions: List[Dict]):

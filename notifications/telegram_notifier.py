@@ -136,6 +136,8 @@ class TelegramNotifier:
         wins: int,
         losses: int,
         open_trades: int,
+        total_pnl: float = 0.0,
+        last_7d_pnl: float = 0.0,
     ):
         total_trades = wins + losses
         win_rate = (wins / total_trades * 100) if total_trades > 0 else 0.0
@@ -153,6 +155,8 @@ class TelegramNotifier:
             f"💹 PnL não realizado: <code>{unrealised_pnl:+.2f} USDT</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n"
             f"{pnl_emoji} PnL do Dia: <code>{sign}{daily_pnl:.2f} USDT</code>\n"
+            f"📅 PnL 7d: <code>{last_7d_pnl:+.2f} USDT</code>\n"
+            f"📚 PnL Total (fechados): <code>{total_pnl:+.2f} USDT</code>\n"
             f"━━━━━━━━━━━━━━━━━━━━━\n"
             f"✅ Wins: <code>{wins}</code>\n"
             f"❌ Losses: <code>{losses}</code>\n"

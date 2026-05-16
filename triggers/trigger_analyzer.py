@@ -197,7 +197,8 @@ class TriggerAnalyzer:
         # ── Consolidação ──────────────────────────────────────────────────────
 
         if not triggers_found:
-            return self._empty_signal()
+            logger.info("Sem gatilhos detectados no lookback")
+            return self._empty_signal("Sem gatilhos detectados")
 
         # Separa gatilhos primários (criam trade) vs suporte (boost confiança)
         primary_triggers = [t for t in triggers_found if t["trigger"] in self.cfg.PRIMARY_TRIGGERS]
@@ -209,8 +210,8 @@ class TriggerAnalyzer:
 
         # CRÍTICO: Rejeita se houver apenas suportes (sem gatilhos primários)
         if not bull_primary and not bear_primary:
-            logger.debug(f"Sinal rejeitado: apenas gatilhos de suporte encontrados (sem gatilhos primários)")
-            return self._empty_signal()
+            logger.debug("Sinal rejeitado: apenas gatilhos de suporte encontrados (sem gatilhos primários)")
+            return self._empty_signal("Apenas gatilhos de suporte encontrados")
 
         # Seleciona direção baseada em gatilhos primários
         if len(bull_primary) >= self.MIN_TRIGGERS:
@@ -220,7 +221,8 @@ class TriggerAnalyzer:
             chosen_primary = bear_primary
             trade_direction = "Sell"
         else:
-            return self._empty_signal()
+            logger.debug("Sinal rejeitado: direção primária não alcançou o mínimo")
+            return self._empty_signal("Direção primária insuficiente")
 
         # Suportes alinhados à direção escolhida (para boost)
         aligned_support = [t for t in support_triggers if t["direction"] == trade_direction]
@@ -256,7 +258,8 @@ class TriggerAnalyzer:
         )
 
         if entry is None:
-            return self._empty_signal()
+            logger.debug("Sinal rejeitado: não foi possível calcular entrada/SL/TP")
+            return self._empty_signal("Falha no cálculo de níveis")
 
         return {
             "valid": True,
@@ -311,7 +314,7 @@ class TriggerAnalyzer:
 
         return entry, sl, tp
 
-    def _empty_signal(self) -> Dict:
+    def _empty_signal(self, reason: str = "Sem gatilhos válidos") -> Dict:
         return {
             "valid": False,
             "direction": None,
@@ -323,4 +326,5 @@ class TriggerAnalyzer:
             "take_profit": None,
             "volume_confirms": False,
             "descriptions": [],
+            "reason": reason,
         }

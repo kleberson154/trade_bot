@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+import io
 
 
 def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
@@ -24,8 +25,15 @@ def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    # Console
-    ch = logging.StreamHandler(sys.stdout)
+    # Console: force UTF-8 encoding for the stream to avoid
+    # UnicodeEncodeError on Windows consoles/files configured with CP1252.
+    try:
+        stream = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", line_buffering=True)
+    except Exception:
+        # Fallback if stdout has no buffer (e.g. some test harnesses)
+        stream = sys.stdout
+
+    ch = logging.StreamHandler(stream)
     ch.setFormatter(fmt)
     logger.addHandler(ch)
 

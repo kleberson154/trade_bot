@@ -18,11 +18,11 @@ from utils.logger import setup_logger
 
 
 logger = setup_logger("liquidity_workflow")
-DEFAULT_SWEEP_EPS = 0.001
+DEFAULT_SWEEP_EPS = 0.002
 # Limiar de penetração única para aceitar BOS/CHOCH (0.001 = 0.1%)
-CHOCH_SINGLE_PENETRATION = 0.001
+CHOCH_SINGLE_PENETRATION = 0.002
 # Limiar mínimo de volume_ratio para aceitar fluxo (conservador)
-VOLUME_RATIO_THRESHOLD = 0.90
+VOLUME_RATIO_THRESHOLD = 0.85
 
 
 @dataclass
@@ -569,6 +569,31 @@ class LiquidityWorkflow:
                 result['entry_reason'] = 'Pullback confirmado'
                 result['entry_level'] = pullback_level
                 result['pullback_depth'] = pullback_depth
+
+            # Se não entrou em pullback nem impulso, preparar diagnóstico
+            if not result['entry_ready'] and result['entry_reason'] is None:
+                last_two_closes = [float(df.iloc[-2]['close']), float(df.iloc[-1]['close'])]
+                last_two_highs = [float(df.iloc[-2]['high']), float(df.iloc[-1]['high'])]
+                last_two_lows = [float(df.iloc[-2]['low']), float(df.iloc[-1]['low'])]
+                result['entry_reason'] = 'Sem pullback detectado'
+                result['diagnostic'] = {
+                    'is_impulse': bool(is_impulse),
+                    'is_pullback': bool(is_pullback),
+                    'last_two_closes': last_two_closes,
+                    'last_two_highs': last_two_highs,
+                    'last_two_lows': last_two_lows,
+                    'sweep_level': sweep_level,
+                }
+                logger.info(
+                    "Passo 5 falhou (diagnostico) | direction=%s is_impulse=%s is_pullback=%s last_closes=%s last_highs=%s last_lows=%s sweep_level=%s",
+                    direction,
+                    is_impulse,
+                    is_pullback,
+                    last_two_closes,
+                    last_two_highs,
+                    last_two_lows,
+                    str(sweep_level),
+                )
         
         elif direction == 'down':
             # Bearish: Procuramos pullback (reação para cima)
@@ -595,6 +620,31 @@ class LiquidityWorkflow:
                 result['entry_reason'] = 'Pullback confirmado'
                 result['entry_level'] = pullback_level
                 result['pullback_depth'] = pullback_depth
+
+            # Se não entrou em pullback nem impulso, preparar diagnóstico
+            if not result['entry_ready'] and result['entry_reason'] is None:
+                last_two_closes = [float(df.iloc[-2]['close']), float(df.iloc[-1]['close'])]
+                last_two_highs = [float(df.iloc[-2]['high']), float(df.iloc[-1]['high'])]
+                last_two_lows = [float(df.iloc[-2]['low']), float(df.iloc[-1]['low'])]
+                result['entry_reason'] = 'Sem pullback detectado'
+                result['diagnostic'] = {
+                    'is_impulse': bool(is_impulse),
+                    'is_pullback': bool(is_pullback),
+                    'last_two_closes': last_two_closes,
+                    'last_two_highs': last_two_highs,
+                    'last_two_lows': last_two_lows,
+                    'sweep_level': sweep_level,
+                }
+                logger.info(
+                    "Passo 5 falhou (diagnostico) | direction=%s is_impulse=%s is_pullback=%s last_closes=%s last_highs=%s last_lows=%s sweep_level=%s",
+                    direction,
+                    is_impulse,
+                    is_pullback,
+                    last_two_closes,
+                    last_two_highs,
+                    last_two_lows,
+                    str(sweep_level),
+                )
         
         if result['entry_ready']:
             self.state.step = 5

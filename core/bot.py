@@ -287,19 +287,6 @@ class TradingBot:
         advanced_analysis = context_result.get("contexts", {}).get("advanced", {})
         advanced_bonus = advanced_analysis.get("bonuses", 0.0)
         logger.debug(f"{symbol} | Análises Avançadas: bonus={advanced_bonus:+.1%}")
-        
-        # NOVO: Análise Macro do Bitcoin (Dominância + Trend)
-        btc_macro_analysis = {}
-        btc_macro_bonus = 0.0
-        if symbol != "BTCUSDT":  # Só analisar BTC macro para altcoins
-            try:
-                df_btc = self.exchange.get_klines("BTCUSDT", self.cfg.PRIMARY_TF, 100)
-                if not df_btc.empty and len(df_btc) >= 50:
-                    btc_macro_analysis = self.context_analyzer.analyze_btc_macro(df_btc, trigger_result.get("direction", "buy"))
-                    btc_macro_bonus = btc_macro_analysis.get("total_bonus", 0.0)
-                    logger.debug(f"{symbol} | BTC Macro: {btc_macro_analysis.get('recommendation', '')} (bonus={btc_macro_bonus:+.1%})")
-            except Exception as e:
-                logger.debug(f"{symbol} | Erro análise BTC macro: {e}")
 
         direction_bias = context_result["direction"]
 
@@ -307,6 +294,7 @@ class TradingBot:
         trigger_result = self.trigger_analyzer.analyze(df_primary, direction_bias)
 
         if not trigger_result["valid"]:
+            logger.info(f"{symbol} | Gatilhos BLOQUEADOS | motivo={trigger_result.get('reason', 'Sem gatilhos válidos')}")
             return
 
         logger.info(
@@ -314,6 +302,25 @@ class TradingBot:
             f"Gatilhos: {trigger_result['triggers']} | "
             f"Dir: {trigger_result['direction']}"
         )
+
+        # NOVO: Análise Macro do Bitcoin (Dominância + Trend)
+        btc_macro_analysis = {}
+        btc_macro_bonus = 0.0
+        if symbol != "BTCUSDT":  # Só analisar BTC macro para altcoins
+            try:
+                df_btc = self.exchange.get_klines("BTCUSDT", self.cfg.PRIMARY_TF, 100)
+                if not df_btc.empty and len(df_btc) >= 50:
+                    btc_macro_analysis = self.context_analyzer.analyze_btc_macro(
+                        df_btc,
+                        trigger_result.get("direction", "buy"),
+                    )
+                    btc_macro_bonus = btc_macro_analysis.get("total_bonus", 0.0)
+                    logger.debug(
+                        f"{symbol} | BTC Macro: {btc_macro_analysis.get('recommendation', '')} "
+                        f"(bonus={btc_macro_bonus:+.1%})"
+                    )
+            except Exception as e:
+                logger.debug(f"{symbol} | Erro análise BTC macro: {e}")
 
         # 4. Dados de mercado para IA
         vol_data = analyze_volume(df_primary)
@@ -336,7 +343,7 @@ class TradingBot:
         )
 
         if ai_result["recommendation"] != "trade":
-            logger.debug(f"{symbol} | IA recomenda skip: {ai_result['reasoning'][:80]}")
+            logger.info(f"{symbol} | IA BLOQUEOU | recomendacao={ai_result['recommendation']} | motivo={ai_result['reasoning'][:120]}")
             return
 
         # Calcula bônus e classifica força da trade
@@ -435,7 +442,9 @@ class TradingBot:
             logger.debug(f"{symbol} | Erro na validação OB: {e}")
 
         if confidence < self.cfg.MIN_CONFLUENCE_SCORE:
-            logger.debug(f"{symbol} | Confiança insuficiente: {confidence:.2f}")
+            logger.info(
+                f"{symbol} | Confiança insuficiente | conf={confidence:.2f} | min={self.cfg.MIN_CONFLUENCE_SCORE:.2f}"
+            )
             return
 
         # 6. Gerenciamento de risco e montagem do trade
@@ -450,6 +459,7 @@ class TradingBot:
         )
 
         if trade_params is None:
+            logger.info(f"{symbol} | Risk manager rejeitou o trade | motivo=build_trade retornou None")
             return
 
         # Verificar margin disponível para trades FORTE/FORTÍSSIMA
@@ -695,6 +705,8 @@ class TradingBot:
         ):
             stats = self.state.get_stats()
             daily_pnl = self.state.get_daily_pnl()
+            total_pnl = stats.get("total_pnl", 0.0)
+            last_7d_pnl = self.state.get_pnl_last_n_days(7)
             await self.telegram.notify_status(
                 equity=wallet["equity"],
                 available=wallet["available"],
@@ -703,6 +715,8 @@ class TradingBot:
                 wins=stats["wins"],
                 losses=stats["losses"],
                 open_trades=stats["open_trades"],
+                total_pnl=total_pnl,
+                last_7d_pnl=last_7d_pnl,
             )
             self._last_status_time = now
 
